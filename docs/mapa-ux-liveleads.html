@@ -206,7 +206,7 @@ pre.mermaid{background:var(--paper);border:1px solid var(--line);border-radius:1
     <li><b>Haz tu live.</b> Abre tu live en TikTok, como siempre. Luego vuelve a LiveLeads y presiona "Iniciar live".</li>
     <li><b>Vende tranquilo.</b> En "Por atender" ves a cada persona que quiere comprar, ordenada por interés. 🔥 marca a quien insiste. Si no sabes qué decir, toca "¿Qué digo ahora?".</li>
     <li><b>Rescata tus ventas.</b> Al terminar ves un resumen de tu live. Toca "Ver a quién escribir", abre a cada persona y toca "Escribirle al DM". Se abre TikTok y le escribes tú.</li>
-    <li><b>Sigue por WhatsApp si quieres.</b> Conecta tu WhatsApp en Perfil. Cuando alguien te dé su número, guárdalo y sigue la conversación ahí.</li>
+    <li><b>Sigue por WhatsApp si quieres.</b> Conecta tu WhatsApp en Perfil y copia tu enlace. Ponlo en tu bio o en el mensaje fijado del live: abre WhatsApp con el mensaje listo y tu cliente solo completa su @. Antes de compartir datos del pedido, confirma que la cuenta es suya.</li>
   </ol>
 </section>
 
@@ -238,7 +238,7 @@ flowchart LR
       <tr><td><b>Historial</b></td><td>Analizar tus lives y volver a cualquiera</td><td>Buscador · 24 h, 7 y 30 días · estadísticas que filtran · etiquetas · filtros de estado, interés y orden · sesiones desplegables · mensajes · Escribirle al DM · PDF</td><td>Entre lives</td></tr>
       <tr><td><b>Etiquetas</b></td><td>Decidir cómo se ordena tu chat</td><td>Ejemplo · agregar etiqueta · sugeridas · descripción de cada una</td><td>Antes del live</td></tr>
       <tr><td><b>Catálogo</b></td><td>Tener tus productos con código</td><td>Lista con código, precio y stock · buscador · formulario · Excel</td><td>Antes del live</td></tr>
-      <tr><td><b>Perfil</b></td><td>Cuenta, tiendas, conexiones y Monedero</td><td>Mis tiendas (hasta 3) · agregar y cambiar de tienda · conectar WhatsApp · mensaje automático · Monedero · recarga · historial de recargas</td><td>De vez en cuando</td></tr>
+      <tr><td><b>Perfil</b></td><td>Cuenta, tiendas, conexiones y Monedero</td><td>Mis tiendas (hasta 3) · agregar y cambiar de tienda · conectar WhatsApp · enlace para clientes · mensaje automático · Monedero · recarga · historial de recargas</td><td>De vez en cuando</td></tr>
     </tbody>
   </table></div>
   <h3>Por rescatar e Historial</h3>
@@ -311,6 +311,19 @@ flowchart LR
   C --> D[Ya lo escaneé]
   D --> E[WhatsApp conectado]
   E --> F[Editar mensaje automático]
+  E --> G[Copiar enlace para clientes]
+</pre>
+  <h3>4b · Del live a WhatsApp</h3>
+  <p>TikTok no entrega el número de quien comenta. La unión se hace cuando el cliente escribe por WhatsApp.</p>
+<pre class="mermaid">
+flowchart TD
+  A[Enlace en la bio o en el mensaje fijado] --> B[Se abre WhatsApp con el mensaje listo]
+  B --> C[El cliente completa su @ y envía]
+  C --> D[LiveLeads busca ese @ en los comentarios]
+  D --> E[Número unido: En WhatsApp · Cuenta sin confirmar]
+  E --> F[Confirmar cuenta: ¿Eres tú? tiktok.com/@…]
+  F --> G[El cliente responde SÍ]
+  G --> H[Cuenta confirmada: ya se comparten datos del pedido]
 </pre>
   <h3>5 · Recargar el Monedero</h3>
 <pre class="mermaid">
@@ -361,9 +374,16 @@ sequenceDiagram
   LL->>IA: Corrección para aprender
   opt Con WhatsApp conectado
     WA-->>LL: Mensaje de un número nuevo, hasta 12 h después
-    LL->>WA: Mensaje automático que pide su @
-    WA-->>LL: Su @ de TikTok
+    alt El mensaje ya trae su @
+      LL->>LL: Leer el @ del mensaje
+    else El mensaje no trae @
+      LL->>WA: Mensaje automático que pide su @
+      WA-->>LL: Su @ de TikTok
+    end
     LL->>LL: Unir el número con sus comentarios
+    V->>LL: Confirmar cuenta
+    LL->>WA: ¿Eres tú? tiktok.com/@…
+    WA-->>LL: SÍ
   end
   V->>PG: Pagar con Yape, Plin o tarjeta
   PG-->>LL: Pago aprobado
@@ -375,6 +395,7 @@ sequenceDiagram
       <tr><td><b>Todo conectado</b></td><td>Tres puntos verdes: TikTok, IA y WhatsApp</td></tr>
       <tr><td><b>WhatsApp sin conectar</b></td><td>Punto apagado y el texto "WhatsApp sin conectar". El live funciona igual.</td></tr>
       <tr><td><b>Sin días</b></td><td>Iniciar live lleva al Monedero con el aviso "Recarga días para conectar tu live"</td></tr>
+      <tr><td><b>Cuenta sin confirmar</b></td><td>La persona muestra "Cuenta sin confirmar" y el botón Confirmar cuenta. Hasta entonces no se comparten datos del pedido.</td></tr>
       <tr><td><b>Límite de tiendas</b></td><td>Con 3 tiendas desaparece Agregar tienda y aparece "Llegaste al límite de 3 tiendas".</td></tr>
       <tr><td><b>Live activo</b></td><td>No se puede cambiar de tienda hasta terminar el live.</td></tr>
       <tr><td><b>Buscando el live</b></td><td>El botón cambia a "Esperando live…" y dice "Buscando el live de @tutienda…"</td></tr>
@@ -474,7 +495,7 @@ sequenceDiagram
 
 <section>
   <span class="eyebrow">Soluciones</span>
-  <h2>Las 21 mejoras del producto</h2>
+  <h2>Las 22 mejoras del producto</h2>
   <p>Cada mejora ya funciona en el prototipo. Puedes probarla en la pantalla indicada.</p>
   <ol class="issues">
     <li><span class="pin">1</span><div><b>El correo se confirma al registrarse.</b><p class="fix">Así Iniciar live funciona desde el primer día. <b>Pruébalo en:</b> Crear cuenta.</p></div></li>
@@ -498,6 +519,7 @@ sequenceDiagram
     <li><span class="pin">19</span><div><b>Historial directo a cada persona.</b><p class="fix">Cada live se despliega con sus personas, sus mensajes y Escribirle al DM. <b>Pruébalo en:</b> Historial.</p></div></li>
     <li><span class="pin">20</span><div><b>Estadísticas que filtran.</b><p class="fix">Periodo, cuatro tarjetas, etiquetas con número y filtros por estado, interés y orden. Todo se actualiza junto. <b>Pruébalo en:</b> Historial.</p></div></li>
     <li><span class="pin">21</span><div><b>Varias tiendas en una cuenta.</b><p class="fix">Hasta 3 tiendas, con selector arriba y un solo Monedero. Agregar una toma 3 pasos. <b>Pruébalo en:</b> Perfil, Mis tiendas.</p></div></li>
+    <li><span class="pin">22</span><div><b>Enlace de WhatsApp con mensaje listo.</b><p class="fix">Evita un paso: el cliente solo completa su @. Se copia desde Perfil o durante el live, y la cuenta se confirma antes de compartir datos del pedido. <b>Pruébalo en:</b> Perfil, Conexiones.</p></div></li>
   </ol>
 </section>
 
@@ -521,6 +543,7 @@ sequenceDiagram
       <tr><td>Después del live</td><td>Prospección de Venta</td><td>Por rescatar · Empieza por quienes insisten 🔥</td></tr>
       <tr><td>Monedero</td><td>5 coins = 5 días de lives</td><td>7 días disponibles · hasta el 6 nov</td></tr>
       <tr><td>Pago</td><td>Pagar S/ 20 con Nequi, PSE o tarjeta</td><td>Pagar S/ 20 por 15 días · Yape, Plin o tarjeta</td></tr>
+      <tr><td>Enlace de WhatsApp</td><td>Pedir el @ después del primer mensaje</td><td>Hola, vengo del live, mi TikTok es @…</td></tr>
       <tr><td>Conexión</td><td>No se pudo conectar: intento 16 de 60</td><td>Aún no vemos tu live. Ábrelo en TikTok y toca Reintentar.</td></tr>
       <tr><td>Durante el live</td><td>Compradores</td><td>Quieren comprar</td></tr>
       <tr><td>Contacto con el cliente</td><td>Escribirle al DM</td><td>Escribirle al DM · Se abre TikTok y le escribes tú</td></tr>
@@ -538,6 +561,8 @@ sequenceDiagram
     <li>La marca debe decidir si catálogo y WhatsApp ya se comunican en redes.</li>
     <li>El clasificador debe separar mejor: en un live real, las 219 personas quedaron en Interesado.</li>
     <li>Hay que aclarar por qué Historial dice 245 leads y la sesión dice 219.</li>
+    <li>El @ escrito en el mensaje no prueba identidad, y el número del enlace del prototipo es de ejemplo.</li>
+    <li>Hay que elegir entre conexión por QR y API oficial de WhatsApp Business, y revisar el consentimiento según la Ley 29733.</li>
     <li>El texto terciario de la app (blanco al 40%) da un contraste aproximado de 3.9:1. Conviene subirlo a 60% en textos pequeños.</li>
     <li>La app real aún no tiene estadísticas, preguntas frecuentes ni horario. El prototipo los muestra como propuesta.</li>
     <li>Falta definir con el equipo técnico cómo se comprueba que una tienda agregada es tuya, y si un mismo WhatsApp puede estar en dos tiendas.</li>

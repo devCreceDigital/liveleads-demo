@@ -77,6 +77,7 @@ El comando sobrescribe `astro/src` y `astro/public/proto.js`.
 - **Monedero por cuenta:** 7 días gratis. Paquetes de 15 días por S/ 20, 30 días por S/ 40 y 60 días por S/ 80. No se cobra por tienda.
 - **Tiendas:** hasta 3 por cuenta.
 - **WhatsApp:** opcional y fuera del onboarding. Se conecta en Perfil.
+- **Enlace de WhatsApp:** abre WhatsApp con el mensaje listo para que el cliente complete su @. No prueba identidad: la cuenta se confirma antes de compartir datos del pedido.
 - **Mensajes:** LiveLeads no escribe por el vendedor. La excepción es el mensaje que pide el @ a un número nuevo, solo si el vendedor conecta WhatsApp.
 - **Diseño:** primero para celular, con el sistema visual de la app real. Los valores están en el Mapa UX.
 
