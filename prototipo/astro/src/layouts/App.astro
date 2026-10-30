@@ -1,0 +1,36 @@
+---
+import Base from './Base.astro';
+interface Props { view: string; title: string }
+const { view, title } = Astro.props;
+---
+<Base view={view} title={title}>
+
+<div class="shell" id="shell">
+  <aside class="side" id="side">
+    <div class="brand"><span class="ll">LL</span>LiveLeads</div>
+    <button class="nav" data-go="live"><span class="n-ic">◉</span>Live</button>
+    <button class="nav" data-go="rescatar"><span class="n-ic">◎</span>Por rescatar<span class="badge" id="nav-badge">5</span></button>
+    <button class="nav" data-go="historial"><span class="n-ic">◷</span>Historial</button>
+    <button class="nav" data-go="etiquetas"><span class="n-ic">⚌</span>Etiquetas</button>
+    <button class="nav" data-go="catalogo"><span class="n-ic">▦</span>Catálogo</button>
+    <button class="nav" data-go="perfil"><span class="n-ic">◯</span>Perfil</button>
+    <div class="side-foot">
+      <button class="plan-pill" data-go="perfil" data-anchor="plan"><span id="plan-pill">Monedero · 7 días</span><br><span class="dim" style="font-size:12px">Recargar</span></button>
+      <button class="nav" data-go="login"><span class="n-ic">↪</span>Cerrar sesión</button>
+    </div>
+  </aside>
+  <div class="scrim" id="side-scrim" hidden></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Abrir o cerrar menú">≡</button>
+      <h1 id="top-title">Live</h1>
+      <div class="right"><div class="store-wrap"><button class="pill" id="store-btn" aria-haspopup="true"></button><div class="store-menu" id="store-menu" hidden></div></div><span class="livepill" id="top-live" hidden><i></i><span id="top-timer">EN VIVO</span></span></div>
+    </header>
+
+    <slot />
+  </main>
+</div>
+
+
+</Base>

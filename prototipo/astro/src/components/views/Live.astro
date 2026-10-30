@@ -1,0 +1,28 @@
+---
+---
+    <div class="page" data-view="live">
+      <div id="live-idle" class="card top">
+        <div class="ico">▶</div>
+        <h2>Monitorear live</h2>
+        <p class="muted" style="margin:0">Cuando estés en vivo en TikTok, presiona Iniciar live. Ordenamos los comentarios mientras vendes.</p>
+        <div class="row item"><span class="ico" style="width:40px;height:40px;background:#3a1626;color:var(--red-ink);box-shadow:none">♪</span><span class="grow"><b class="acc-name">@tutienda</b><br><span class="dim" style="font-size:13px" id="live-acc-state">Listo para conectar</span></span><button class="link" data-go="perfil">Cambiar</button></div>
+        <div class="say-box" id="live-err" hidden style="display:flex;flex-direction:column;gap:8px"><b id="err-t"></b><span id="err-d"></span><div class="row"><button class="btn sm" id="err-retry">Reintentar</button><button class="link" data-go="perfil">Revisar mi @</button></div></div>
+        <button class="btn block" id="live-start">Iniciar live</button>
+        <div class="health"><span><i class="dot"></i>TikTok</span><span><i class="dot"></i>IA</span><span><i class="dot" id="h-wa"></i>WhatsApp</span></div>
+      </div>
+      <p class="foot" id="live-idle-foot">Lo que no vendiste en el live, véndelo después.</p>
+
+      <div id="live-on" data-v="atender" hidden style="display:flex;flex-direction:column;gap:14px">
+        <div class="stats"><div class="stat"><b id="st-c">0</b><span>comentarios</span></div><div class="stat"><b id="st-b">0</b><span>quieren comprar</span></div><div class="stat"><b id="st-h">0</b><span>🔥 insisten</span></div></div>
+        <div class="health"><span><i class="dot"></i>TikTok</span><span><i class="dot"></i>IA</span><span><i class="dot" id="h-wa2"></i><span id="h-wa2-t">WhatsApp</span></span></div>
+        <div class="row"><div class="seg" id="live-seg"><button class="on" data-v="atender">Por atender · <span id="seg-n">0</span></button><button data-v="chat">Todo el chat</button></div><button class="lens" id="live-lens" aria-label="Buscar comentarios">⌕</button></div>
+        <input class="in" id="live-q" placeholder="Buscar @usuario, comentario o código (B12)" hidden>
+        <button class="newchip" id="live-new" hidden></button>
+        <div class="live-lists">
+          <div class="live-col" id="col-at"><h3>Por atender</h3><div class="chips" id="live-filter"></div><div class="feed" id="live-feed"></div></div>
+          <div class="live-col" id="col-chat"><h3>Todo el chat</h3><div class="feed" id="live-chat"></div></div>
+        </div>
+        <div class="say-box" id="say-box" hidden></div>
+        <div class="live-bar"><button class="btn soft" id="say-btn">💡 ¿Qué digo ahora?</button><button class="btn ghost" id="live-stop">Terminar live</button></div>
+      </div>
+    </div>

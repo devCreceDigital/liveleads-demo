@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LiveLeads Prototipo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: app shell = collapsible sidebar + one centered column per screen (max 560px), single dark look like the LiveLeads app */
+:root{
+  color-scheme:dark;
+  --bg:#0b0f1a; --side:#0b0f1a; --card:#10141f; --row:rgba(255,255,255,.05); --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.1);
+  --fg:rgba(255,255,255,.9); --soft:rgba(255,255,255,.5); --dim:rgba(255,255,255,.4);
+  --red:#fe2c55; --red-ink:#fe2c55; --cyan:#25f4ee; --ok:#4ade80; --warn:#f4c430;
+  --grad:linear-gradient(90deg,#fe2c55,#25f4ee);
+  --f:Inter,ui-sans-serif,system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:500 15px/1.5 var(--f)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+[hidden]{display:none!important}
+.mono{font-family:var(--mono)}
+.muted{color:var(--soft)}
+.dim{color:var(--dim)}
+
+/* ---------- auth ---------- */
+.auth{min-height:100%;display:grid;place-items:center;padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.auth-box{width:min(100%,440px);display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:22px}
+.ll{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#fe2c55,#25f4ee);display:grid;place-items:center;color:#0a0e1a;font-weight:800;letter-spacing:-1px;flex:none}
+.ll.big{width:84px;height:84px;border-radius:24px;font-size:38px}
+
+/* ---------- primitives ---------- */
+.card{position:relative;background:var(--card);border:.8px solid rgba(255,255,255,.06);border-radius:21.6px;padding:24px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.card.top::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--grad)}
+.card.slim{padding:16px 18px;gap:10px}
+h1,h2,h3{margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:26px;font-weight:800}
+h2{font-size:21px;font-weight:800}
+h3{font-size:16px;font-weight:700}
+.btn{border:0;border-radius:16.8px;padding:12px 24px;font-size:14px;font-weight:600;background:var(--red);color:#fff;box-shadow:0 8px 24px rgba(254,44,85,.28);display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.btn.ghost{background:transparent;border:1px solid var(--line-2);box-shadow:none}
+.btn.soft{background:var(--row);border:1px solid var(--line);box-shadow:none}
+.btn.grad{background:var(--red)}
+.btn.sm{padding:8px 12px;border-radius:12px;font-size:12px}
+.link{background:none;border:0;color:var(--soft);padding:0;text-decoration:underline;text-underline-offset:3px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>span{font-size:13px;color:var(--soft);font-weight:600}
+.in{width:100%;background:rgba(255,255,255,.05);border:.8px solid rgba(255,255,255,.1);border-radius:16.8px;padding:12px 16px;outline:none;font-size:14px}
+select.in option{color:#0b0f1a}
+.in:focus{border-color:#6b2340}
+.in.err{border-color:var(--red)}
+.help{font-size:14px;color:var(--dim)}
+.help.err{color:#ff8a9e}
+.row{display:flex;gap:10px;align-items:center;min-width:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:0;border-radius:99px;padding:4px 10px;font-size:12px;font-weight:600;background:rgba(255,255,255,.03);color:var(--dim)}
+.chip.on{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;padding:4px 9px;border-radius:8px;white-space:nowrap}
+.sw{width:10px;height:10px;border-radius:3px;flex:none;display:inline-block}
+.item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;min-width:0;text-align:left;width:100%}
+button.item:hover{border-color:var(--line-2)}
+.item .grow{flex:1;min-width:0}
+.item .who{font-size:13.5px;font-weight:700}
+.item .say{color:#fff;overflow-wrap:anywhere}
+.toggle{display:inline-flex;align-items:center;gap:10px;background:none;border:0;padding:0}
+.toggle i{width:40px;height:22px;border-radius:99px;background:var(--line-2);position:relative;flex:none;transition:background .2s}
+.toggle i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+.toggle[aria-pressed="true"] i{background:var(--red)}
+.toggle[aria-pressed="true"] i::after{left:21px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:28px 12px;color:var(--soft)}
+.empty .ic{width:52px;height:52px;border-radius:16px;background:var(--row);display:grid;place-items:center;font-size:22px}
+.ico{width:52px;height:52px;border-radius:15px;background:var(--red);display:grid;place-items:center;font-size:20px;box-shadow:0 8px 26px rgba(254,44,85,.35);flex:none}
+.example{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:4px;width:100%}
+.health{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;font-size:14px;color:var(--soft)}
+.health span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.dot.warn{background:var(--warn)} .dot.off{background:var(--line-2)}
+.code{font:700 12px/1 var(--mono);color:var(--red-ink);background:rgba(255,77,109,.12);padding:5px 7px;border-radius:6px}
+.gift{display:flex;align-items:center;gap:10px;background:rgba(63,217,216,.1);border:1px solid rgba(63,217,216,.35);border-radius:14px;padding:12px 14px;font-size:14px}
+.steps{display:flex;gap:6px}
+.steps i{height:4px;flex:1;border-radius:4px;background:var(--line-2)}
+.steps i.on{background:var(--grad)}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100%}
+.shell.closed{grid-template-columns:0 1fr}
+.side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;padding:16px 12px;position:sticky;top:0;height:100vh;overflow:hidden}
+.shell.closed .side{padding:0;border:0}
+.side .brand{padding:4px 8px 14px;font-size:18px}
+.nav{display:flex;align-items:center;gap:10px;background:none;border:0;border-radius:16.8px;padding:10px 12px;color:var(--soft);font-size:14px;font-weight:500;text-align:left;white-space:nowrap}
+.nav:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav.on{background:rgba(255,255,255,.1);color:#fff}
+.nav .n-ic{width:20px;text-align:center}
+.nav .badge{margin-left:auto;font:700 11px/1 var(--mono);background:var(--red);color:#fff;border-radius:99px;padding:4px 7px}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+.plan-pill{border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--cyan);font-size:13px;background:none;text-align:left}
+.topbar{display:flex;align-items:center;gap:12px;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));border-bottom:.8px solid rgba(255,255,255,.04);position:sticky;top:0;background:#0b0f1a;z-index:5}
+.burger{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--soft);display:grid;place-items:center}
+.topbar h1{font-size:18px;font-weight:800;color:rgba(255,255,255,.9)}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.livepill{font:700 12px/1 var(--mono);color:var(--red-ink);display:inline-flex;align-items:center;gap:8px}
+.livepill i{width:9px;height:9px;border-radius:50%;background:var(--red-ink);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.main{min-width:0;display:flex;flex-direction:column}
+.page{width:min(100%,600px);margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+.page.wide{width:min(100%,760px)}
+.foot{text-align:center;color:var(--dim);font-size:14px}
+.scrim{position:fixed;inset:0;background:rgba(11,15,26,.7);backdrop-filter:blur(4px);z-index:40}
+
+/* ---------- live ---------- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.stat b{font-size:24px;display:block;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--soft)}
+.feed{display:flex;flex-direction:column;gap:8px}
+.feed .item{animation:in .35s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--row);border-radius:12px;padding:4px;flex:1;min-width:0}
+.seg button{border:0;background:none;color:var(--soft);border-radius:9px;padding:9px 6px;font-weight:700;font-size:14px}
+.seg button.on{background:var(--card);color:#fff}
+.lens{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid var(--line-2);background:none;font-size:17px}
+.live-lists{display:grid;gap:14px;min-width:0}
+.live-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.live-col>h3{display:none}
+#live-on[data-v="atender"] #col-chat,#live-on[data-v="chat"] #col-at{display:none}
+.live-bar{position:sticky;bottom:0;z-index:4;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px 0 max(10px,env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
+.newchip{position:sticky;top:68px;z-index:4;align-self:center;background:#fff;color:#0b0f1a;border:0;border-radius:99px;padding:8px 16px;font-weight:700;font-size:14px}
+.sum-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.sum-tags{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left}
+.sum-tags div{display:flex;justify-content:space-between;align-items:center;gap:10px}
+body.live-on .demo-bar{display:none}
+body.live-on [data-view="live"]{padding-top:16px;padding-bottom:0}
+#live-on{min-height:calc(100dvh - 76px)}
+.live-bar{margin-top:auto}
+#live-filter{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#live-filter .chip{flex:none;white-space:nowrap}
+body.live-on .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+@media (min-width:1024px){
+  body.live-on [data-view="live"]{width:min(100%,1100px)}
+  .live-lists{grid-template-columns:1fr 1fr;align-items:start}
+  #live-on[data-v] #col-at,#live-on[data-v] #col-chat{display:flex}
+  .live-col>h3{display:block}
+  .seg{display:none}
+}
+.person{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;align-items:center;padding:8px 12px;border-radius:12px}
+.person:hover{background:rgba(255,255,255,.02)}
+.p-main{display:grid;grid-template-columns:10px minmax(0,1fr);gap:0 12px;align-items:center;min-width:0}
+.pdot{width:9px;height:9px;border-radius:50%;grid-row:span 2}
+.p-name{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.p-meta{font:500 11.5px/1 var(--mono);margin-left:6px;white-space:nowrap}
+.p-quote{grid-column:2;font-style:italic;color:var(--dim);font-size:12px;overflow-wrap:anywhere}
+.p-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;background:transparent;border:.8px solid rgba(255,255,255,.08);border-radius:12px;padding:0 10px;color:var(--dim);font-size:12px;font-weight:500;white-space:nowrap}
+.pill svg{width:14px;height:14px;flex:none}
+.pill.dm{background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.145);color:#4ade80;padding:0 12px}
+.pill.done{background:transparent;border-color:var(--line);color:var(--dim)}
+.chatline{padding:9px 2px}
+.chatline .top-l{display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+.chatline .nm{font-weight:600}
+.chatline .tm{font:500 11.5px/1 var(--mono);color:var(--dim)}
+.sess{background:rgba(255,255,255,.02);border:.8px solid rgba(255,255,255,.06);border-radius:21.6px;overflow:hidden}
+.sess-head{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;background:none;border:0;padding:16px;text-align:left}
+.sess-head.open{background:rgba(255,255,255,.02)}
+.badge-ok{font-size:10px;font-weight:500;color:#4ade80;background:rgba(74,222,128,.082);padding:2px 6px;border-radius:99px}
+.sess-meta{font:500 12.5px/1.3 var(--mono);color:var(--dim)}
+.sess-count{font:500 13px/1 var(--mono);color:var(--dim);white-space:nowrap}
+.sess-body{padding:6px 18px 12px;display:flex;flex-direction:column;gap:10px}
+.his-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.hstat{background:rgba(255,255,255,.02);border:.8px solid rgba(255,255,255,.06);border-radius:16.8px;padding:12px 14px;text-align:left;color:var(--soft);font-size:12px}
+.hstat b{display:block;font-size:22px;font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums}
+button.hstat:hover{border-color:rgba(255,255,255,.14)}
+.hstat.on{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14)}
+.store-wrap{position:relative;min-width:0}
+#store-btn{max-width:150px;overflow:hidden;text-overflow:ellipsis;color:var(--fg);display:block}
+.store-menu{position:absolute;right:0;top:calc(100% + 6px);width:230px;background:var(--card);border:.8px solid rgba(255,255,255,.1);border-radius:16.8px;padding:6px;z-index:20;display:flex;flex-direction:column;gap:2px}
+.store-menu button{background:none;border:0;border-radius:12px;padding:10px 12px;text-align:left;color:var(--fg);font-size:14px}
+.store-menu button:hover{background:rgba(255,255,255,.05)}
+.store-menu button.on{background:rgba(255,255,255,.1)}
+.store-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16.8px;background:rgba(255,255,255,.03);min-width:0}
+.store-row .grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.mon-bal{display:flex;align-items:baseline;gap:8px}
+.mon-bal b{font-size:32px;font-weight:800;color:var(--fg)}
+.rec-list{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--soft)}
+.rec-list div{display:flex;justify-content:space-between;gap:10px}
+.mono-note{font:500 13px/1 var(--mono);color:var(--dim)}
+.bubble{display:flex;justify-content:space-between;gap:10px;align-items:center;background:rgba(255,255,255,.05);border-radius:16.8px;font-size:14px;padding:10px 13px;overflow-wrap:anywhere}
+.xn{font:700 11.5px/1 var(--mono);background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);padding:4px 7px;border-radius:99px;flex:none}
+.bubbles{display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:0}
+details.resumen{border:1px solid var(--line);border-radius:20px;padding:14px 18px;background:var(--card)}
+details.resumen summary{cursor:pointer;font-weight:600}
+details.resumen>div{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+@media (max-width:640px){
+  .his-stats{grid-template-columns:1fr 1fr}
+  .person{grid-template-columns:minmax(0,1fr)}
+  .p-acts{display:grid;grid-template-columns:1fr 1fr}
+  .p-acts.one{grid-template-columns:1fr}
+  .drawer{left:0;right:0;top:auto;bottom:0;transform:none;width:100%;max-height:90dvh;border-radius:20px 20px 0 0;border-width:1px 0 0;padding-bottom:max(18px,env(safe-area-inset-bottom,0px))}
+  .sess-head{grid-template-columns:10px minmax(0,1fr) auto;padding:13px 14px}
+  .sess-body{padding:6px 14px 10px}
+}
+.say-box{background:#1d1a10;border:1px solid #4b3f12;border-radius:14px;padding:12px 14px;color:#ffe9a6;font-size:14px}
+
+/* ---------- drawer & modal ---------- */
+.drawer{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(calc(100% - 32px),430px);max-height:86dvh;background:var(--card);border:.8px solid rgba(255,255,255,.08);border-radius:21.6px;z-index:50;display:flex;flex-direction:column;gap:14px;padding:18px 20px;overflow:auto}
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.modal>.card{--pad:24px;padding:var(--pad);width:min(100%,620px);max-height:92dvh;overflow:auto;overscroll-behavior:contain}
+.modal>.card>*{flex:none}
+.modal>.card .card{overflow:visible;padding:16px 18px}
+.modal .row{flex-wrap:wrap}
+.form-actions{position:sticky;bottom:calc(var(--pad) * -1);z-index:2;margin:0 calc(var(--pad) * -1) calc(var(--pad) * -1);padding:14px var(--pad) max(14px,env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--line);justify-content:flex-end;gap:16px}
+.toggle-field{min-height:48px}
+body:has(#scrim:not([hidden])){overflow:hidden}
+#scrim:not([hidden])~.demo-bar{display:none}
+.modal>.card.narrow{width:min(100%,420px)}
+.x{margin-left:auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--soft)}
+.timeline{display:flex;flex-direction:column;gap:8px;border-left:2px solid var(--line);padding-left:14px}
+.timeline span{font-size:13.5px}
+.timeline small{color:var(--dim);font-family:var(--mono)}
+.qr{width:200px;height:200px;margin:0 auto;border-radius:16px;background:#fff;display:grid;place-items:center}
+.photo{border:1px dashed var(--line-2);border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--soft)}
+.var-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.var-grid .in{padding:10px 8px;text-align:center}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);background:#fff;color:#0b0f1a;border-radius:12px;padding:12px 18px;font-weight:700;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.funnel{display:flex;flex-direction:column;gap:8px}
+.funnel div{position:relative;display:flex;justify-content:space-between;padding:10px 12px;border-radius:10px;background:var(--row);overflow:hidden}
+.funnel div::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:rgba(254,44,85,.18)}
+.funnel div>*{position:relative}
+.bars{display:flex;align-items:flex-end;gap:6px;height:90px}
+.bars i{flex:1;background:var(--line-2);border-radius:6px 6px 0 0}
+.bars i.hi{background:var(--red)}
+.demo-bar{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:max(12px,env(safe-area-inset-bottom,0px));z-index:70;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 24px)}
+.demo-bar::before{content:"Prototipo";align-self:center;font:700 11px/1 var(--mono);color:var(--dim);margin-right:4px}
+.demo-bar button{background:#ffffff14;border:1px solid #ffffff22;color:var(--soft);border-radius:99px;padding:6px 11px;font-size:12px;backdrop-filter:blur(6px)}
+
+@media (max-width:820px){
+  .shell,.shell.closed{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:260px;z-index:45;transform:translateX(-100%);transition:transform .25s}
+  .shell.mopen .side{transform:none;padding:16px 12px;border-right:1px solid var(--line)}
+  .shell.closed .side{padding:16px 12px}
+  .two{grid-template-columns:1fr}
+  .stats b{font-size:20px}
+  .modal .two{grid-template-columns:1fr 1fr}
+}
+@media (max-width:640px){
+  .drawer{left:0;right:0;top:auto;bottom:0;transform:none;width:100%;max-height:90dvh;border-radius:21.6px 21.6px 0 0;border-width:.8px 0 0;padding-bottom:max(18px,env(safe-area-inset-bottom,0px))}
+  .modal{padding:0;place-items:stretch}
+  .modal>.card:not(.narrow){--pad:16px;width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0;padding-top:max(16px,env(safe-area-inset-top,0px))}
+  .modal>.card:not(.narrow)::before{display:none}
+  .modal>.card.narrow{margin:auto;width:calc(100% - 32px)}
+  .photo{flex-direction:row;flex-wrap:wrap;justify-content:center;padding:12px}
+  .form-actions .btn{flex:1}
+}
+@media (max-width:340px){
+  .modal .two{grid-template-columns:1fr}
+  .var-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<!-- ============ AUTH ============ -->
+<div class="auth" data-view="login">
+  <form class="auth-box" id="f-login" novalidate>
+    <div class="brand"><span class="ll">LL</span>LiveLeads</div>
+    <div class="card top">
+      <h1>¡Hola de nuevo!</h1>
+      <label class="field"><span>Tu @ de TikTok o correo</span><input class="in" id="l-user" placeholder="@tutienda" autocomplete="username"></label>
+      <label class="field"><span>Contraseña</span><input class="in" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"></label>
+      <span class="help err" id="l-err" hidden>Escribe tu @ o correo y tu contraseña.</span>
+      <button class="btn block" type="submit">Iniciar sesión</button>
+      <button class="link" type="button" data-toast="Te enviamos un código a tu correo">¿Olvidaste tu clave? Entra con un código</button>
+    </div>
+    <p class="foot">¿No tienes cuenta? <button class="link" type="button" data-go="registro">Crea tu cuenta gratis</button></p>
+  </form>
+</div>
+
+<div class="auth" data-view="registro" hidden>
+  <form class="auth-box" id="f-reg" novalidate>
+    <div class="brand"><span class="ll">LL</span>LiveLeads</div>
+    <div class="steps"><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="card top">
+      <h1>Crea tu cuenta</h1>
+      <p class="muted" style="margin:0"><b>7 días gratis.</b> Sin tarjeta. Te toma 2 minutos.</p>
+      <label class="field"><span>Tu @ de TikTok</span><input class="in" id="r-tt" placeholder="@tutienda"><span class="help">La cuenta desde la que haces tus lives.</span></label>
+      <label class="field"><span>Correo</span><input class="in" id="r-mail" type="email" placeholder="tienda@correo.com"></label>
+      <label class="field"><span>Contraseña</span><input class="in" id="r-pass" type="password" placeholder="Mínimo 8 caracteres"></label>
+      <span class="help err" id="r-err" hidden></span>
+      <button class="btn block" type="submit">Crear cuenta</button>
+    </div>
+    <p class="foot">¿Ya tienes cuenta? <button class="link" type="button" data-go="login">Inicia sesión</button></p>
+  </form>
+</div>
+
+<div class="auth" data-view="verificar" hidden>
+  <form class="auth-box" id="f-ver" novalidate>
+    <div class="brand"><span class="ll">LL</span>LiveLeads</div>
+    <div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+    <div class="card top">
+      <h1>Confirma tu correo</h1>
+      <p class="muted" style="margin:0">Te enviamos un código de 6 dígitos a <b id="v-mail">tu correo</b>. Lo pedimos una sola vez, para que el día de tu live nada te frene.</p>
+      <input class="in mono" id="v-code" inputmode="numeric" maxlength="6" placeholder="000000" style="font-size:24px;letter-spacing:.4em;text-align:center">
+      <span class="help">Para probar el prototipo, escribe cualquier código de 6 dígitos.</span>
+      <span class="help err" id="v-err" hidden>El código tiene 6 dígitos.</span>
+      <button class="btn block" type="submit">Confirmar</button>
+      <button class="link" type="button" data-toast="Te enviamos un código nuevo">Reenviar código</button>
+    </div>
+  </form>
+</div>
+
+<div class="auth" data-view="ob-etiquetas" hidden>
+  <div class="auth-box" style="width:min(100%,520px)">
+    <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+    <span class="dim mono" style="font-size:12px;letter-spacing:.12em">PASO 1 DE 2</span>
+    <div class="example"><span><span class="tag" style="background:rgba(123,131,240,.18);color:#9aa1ff">Pregunta precio</span> <b>rosa.ejemplo</b></span><span>q. precio de la casaca negra?</span></div>
+    <div class="card top">
+      <h1>Crea tus etiquetas</h1>
+      <p class="muted" style="margin:0">Las etiquetas son los grupos donde ordenamos a quienes comentan tu live. Empieza con las recomendadas y cámbialas cuando quieras.</p>
+      <button class="btn grad block" id="ob-reco">✨ Usar las recomendadas</button>
+      <div class="feed" id="ob-list"></div>
+      <button class="btn block" id="ob-next1" disabled>Siguiente</button>
+    </div>
+    <button class="link" data-go="ob-tiktok" style="align-self:center">Lo hago después</button>
+  </div>
+</div>
+
+<div class="auth" data-view="ob-tiktok" hidden>
+  <div class="auth-box" style="width:min(100%,520px)">
+    <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <span class="dim mono" style="font-size:12px;letter-spacing:.12em">PASO 2 DE 2</span>
+    <div class="card top">
+      <div class="ico">▶</div>
+      <h1>Así haces tu primer live</h1>
+      <div class="timeline"><span><b>1.</b> Abre tu live en TikTok, como siempre.</span><span><b>2.</b> Vuelve aquí y presiona <b>Iniciar live</b>.</span><span><b>3.</b> Vende tranquilo: ordenamos los comentarios por ti.</span><span><b>4.</b> Al terminar, abre <b>Por rescatar</b> y escribe primero a quienes más insistieron.</span></div>
+      <div class="gift"><span>🎁</span><span>Tienes <b>7 días gratis</b> para probarlo todo.</span></div>
+      <button class="btn block" data-go="live">Empezar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div class="shell" id="shell" hidden>
+  <aside class="side" id="side">
+    <div class="brand"><span class="ll">LL</span>LiveLeads</div>
+    <button class="nav" data-go="live"><span class="n-ic">◉</span>Live</button>
+    <button class="nav" data-go="rescatar"><span class="n-ic">◎</span>Por rescatar<span class="badge" id="nav-badge">5</span></button>
+    <button class="nav" data-go="historial"><span class="n-ic">◷</span>Historial</button>
+    <button class="nav" data-go="etiquetas"><span class="n-ic">⚌</span>Etiquetas</button>
+    <button class="nav" data-go="catalogo"><span class="n-ic">▦</span>Catálogo</button>
+    <button class="nav" data-go="perfil"><span class="n-ic">◯</span>Perfil</button>
+    <div class="side-foot">
+      <button class="plan-pill" data-go="perfil" data-anchor="plan"><span id="plan-pill">Monedero · 7 días</span><br><span class="dim" style="font-size:12px">Recargar</span></button>
+      <button class="nav" data-go="login"><span class="n-ic">↪</span>Cerrar sesión</button>
+    </div>
+  </aside>
+  <div class="scrim" id="side-scrim" hidden></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Abrir o cerrar menú">≡</button>
+      <h1 id="top-title">Live</h1>
+      <div class="right"><div class="store-wrap"><button class="pill" id="store-btn" aria-haspopup="true"></button><div class="store-menu" id="store-menu" hidden></div></div><span class="livepill" id="top-live" hidden><i></i><span id="top-timer">EN VIVO</span></span></div>
+    </header>
+
+    <!-- LIVE -->
+    <div class="page" data-view="live" hidden>
+      <div id="live-idle" class="card top">
+        <div class="ico">▶</div>
+        <h2>Monitorear live</h2>
+        <p class="muted" style="margin:0">Cuando estés en vivo en TikTok, presiona Iniciar live. Ordenamos los comentarios mientras vendes.</p>
+        <div class="row item"><span class="ico" style="width:40px;height:40px;background:#3a1626;color:var(--red-ink);box-shadow:none">♪</span><span class="grow"><b class="acc-name">@tutienda</b><br><span class="dim" style="font-size:13px" id="live-acc-state">Listo para conectar</span></span><button class="link" data-go="perfil">Cambiar</button></div>
+        <div class="say-box" id="live-err" hidden style="display:flex;flex-direction:column;gap:8px"><b id="err-t"></b><span id="err-d"></span><div class="row"><button class="btn sm" id="err-retry">Reintentar</button><button class="link" data-go="perfil">Revisar mi @</button></div></div>
+        <button class="btn block" id="live-start">Iniciar live</button>
+        <div class="health"><span><i class="dot"></i>TikTok</span><span><i class="dot"></i>IA</span><span><i class="dot" id="h-wa"></i>WhatsApp</span></div>
+      </div>
+      <p class="foot" id="live-idle-foot">Lo que no vendiste en el live, véndelo después.</p>
+
+      <div id="live-on" data-v="atender" hidden style="display:flex;flex-direction:column;gap:14px">
+        <div class="stats"><div class="stat"><b id="st-c">0</b><span>comentarios</span></div><div class="stat"><b id="st-b">0</b><span>quieren comprar</span></div><div class="stat"><b id="st-h">0</b><span>🔥 insisten</span></div></div>
+        <div class="health"><span><i class="dot"></i>TikTok</span><span><i class="dot"></i>IA</span><span><i class="dot" id="h-wa2"></i><span id="h-wa2-t">WhatsApp</span></span></div>
+        <div class="row"><div class="seg" id="live-seg"><button class="on" data-v="atender">Por atender · <span id="seg-n">0</span></button><button data-v="chat">Todo el chat</button></div><button class="lens" id="live-lens" aria-label="Buscar comentarios">⌕</button></div>
+        <input class="in" id="live-q" placeholder="Buscar @usuario, comentario o código (B12)" hidden>
+        <button class="newchip" id="live-new" hidden></button>
+        <div class="live-lists">
+          <div class="live-col" id="col-at"><h3>Por atender</h3><div class="chips" id="live-filter"></div><div class="feed" id="live-feed"></div></div>
+          <div class="live-col" id="col-chat"><h3>Todo el chat</h3><div class="feed" id="live-chat"></div></div>
+        </div>
+        <div class="say-box" id="say-box" hidden></div>
+        <div class="live-bar"><button class="btn soft" id="say-btn">💡 ¿Qué digo ahora?</button><button class="btn ghost" id="live-stop">Terminar live</button></div>
+      </div>
+    </div>
+
+    <!-- POR RESCATAR -->
+    <div class="page wide" data-view="rescatar" hidden>
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap"><span class="muted"><span id="res-sub">Live de ayer · 20:00</span> · Primero quienes quieren comprar</span><button class="btn soft sm" data-toast="Descargamos tu lista en Excel">Descargar Excel</button></div>
+      <input class="in" id="res-q" placeholder="Buscar @usuario o comentario">
+      <div class="chips" id="res-state">
+        <button class="chip on" data-st="todos">Todos</button><button class="chip" data-st="pendiente">Por escribir</button><button class="chip" data-st="escrito">Escritos</button><button class="chip" data-st="whatsapp">En WhatsApp</button>
+      </div>
+      <div class="chips" id="res-tags"></div>
+      <div class="card slim" style="padding:8px 4px" id="res-list"></div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="page wide" data-view="historial" hidden>
+      <form class="row" id="f-his"><input class="in" id="his-q" placeholder="Buscar @usuario, comentario o código"><button class="btn" type="submit">Buscar</button></form>
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap"><div class="chips" id="his-range"><button type="button" class="chip" data-r="1">24 h</button><button type="button" class="chip on" data-r="7">7 días</button><button type="button" class="chip" data-r="30">30 días</button></div><button class="btn soft sm" data-toast="Descargamos tu reporte en PDF">Reporte PDF</button></div>
+      <div class="his-stats" id="his-stats"></div>
+      <div class="row" style="align-items:flex-start"><div class="chips" id="his-tags" style="flex:1"></div><button class="pill" id="his-fbtn" aria-expanded="false">Filtros</button></div>
+      <div class="card slim" id="his-fpanel" hidden>
+        <h3>Estado</h3><div class="chips" id="his-state"><button class="chip on" data-hst="todos">Todos</button><button class="chip" data-hst="pendiente">Por escribir</button><button class="chip" data-hst="escrito">Escritos</button><button class="chip" data-hst="whatsapp">En WhatsApp</button></div>
+        <h3>Interés</h3><div class="chips"><button class="chip" id="his-hot">🔥 Insisten</button></div>
+        <h3>Ordenar por</h3><div class="chips" id="his-sort"><button class="chip on" data-so="interes">Más interés</button><button class="chip" data-so="mensajes">Más mensajes</button></div>
+        <button class="link" id="his-clear" style="align-self:flex-start">Limpiar filtros</button>
+      </div>
+      <span class="mono-note" id="his-note"></span>
+      <div style="display:flex;flex-direction:column;gap:12px" id="his-lives"></div>
+      <details class="resumen">
+        <summary>Qué preguntaron y cuándo</summary>
+        <div><div class="two">
+          <div class="card slim"><h3>Lo que más te preguntaron</h3><div class="chips" id="his-q-top"></div><span class="help">Explícalo al inicio de tu próximo live.</span></div>
+          <div class="card slim"><h3>Horario con más audiencia</h3><div class="bars" id="his-bars"></div><span class="help" id="his-peak"></span></div>
+        </div></div>
+      </details>
+      <p class="foot">Datos de ejemplo</p>
+    </div>
+
+    <!-- ETIQUETAS -->
+    <div class="page" data-view="etiquetas" hidden>
+      <div class="example"><span><span class="tag" style="background:rgba(244,196,48,.16);color:#f4c430">Negociando</span> <b>usuario_ejemplo</b></span><span>¿me lo dejas en menos si llevo 2?</span></div>
+      <h2 style="text-align:center">Etiquetas</h2>
+      <p class="muted" style="text-align:center;margin:0">La IA pone cada comentario en una. Si se equivoca con alguien, cámbialo de etiqueta y aprende.</p>
+      <form class="row" id="f-tag"><input class="in" id="tag-in" placeholder="Escribe una etiqueta (ej: Pregunta talla)"><button class="btn" type="submit">Agregar</button></form>
+      <div class="chips" id="tag-sugg"></div>
+      <div class="feed" id="tag-list"></div>
+    </div>
+
+    <!-- CATALOGO -->
+    <div class="page" data-view="catalogo" hidden>
+      <div class="example"><span><span class="tag" style="background:rgba(43,179,154,.18);color:#4fd3b8">Quiere comprar</span> <b>usuario_ejemplo</b></span><span>quiero <b class="code">B12</b> en talla M</span></div>
+      <p class="muted" style="text-align:center;margin:0">Cuando alguien comenta el código en tu live, queda listo para que le escribas.</p>
+      <div class="row"><input class="in" id="cat-q" placeholder="Buscar por código o nombre"><button class="btn" id="cat-new">+ Nuevo</button></div>
+      <div class="feed" id="cat-list"></div>
+      <div class="row" style="justify-content:center"><button class="link" data-toast="Elige tu archivo de Excel">Subir Excel</button><span class="dim">·</span><button class="link" data-toast="Descargamos tu catálogo en Excel">Descargar Excel</button></div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="page" data-view="perfil" hidden>
+      <div class="card slim"><div class="row"><span class="ico" style="width:44px;height:44px;background:#3a1626;color:var(--red-ink);box-shadow:none">♪</span><span class="grow"><b class="acc-name">@tutienda</b><br><span class="dim" style="font-size:13px" id="pf-mail">tienda@correo.com</span></span><button class="btn soft sm" data-toast="Te escribimos por WhatsApp para cambiar tu @">Cambiar @</button></div></div>
+      <div class="card slim" id="tiendas">
+        <div class="row"><h3 class="grow">Mis tiendas</h3><span class="mono-note" id="st-count"></span></div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="st-list"></div>
+        <button class="btn soft" id="st-add">+ Agregar tienda</button>
+        <span class="help" id="st-help"></span>
+      </div>
+      <div class="card slim">
+        <h3>Conexiones de <span class="acc-name"></span></h3>
+        <div class="row"><span class="dot"></span><span class="grow">TikTok conectado</span></div>
+        <div class="row"><span class="dot" id="pf-wa-dot"></span><span class="grow" id="pf-wa-txt">WhatsApp conectado · +51 9•• ••• 821</span><button class="toggle" id="pf-wa" aria-pressed="true"><i></i></button></div>
+        <details>
+          <summary class="muted" style="cursor:pointer">Mensaje automático para pedir el @</summary>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+            <span class="help">Cuando un número que no conocemos te escribe durante el live (o hasta 12 h después), le llega este mensaje. Cuando nos da su @, lo unimos con sus comentarios.</span>
+            <textarea class="in" id="pf-msg" rows="3">¡Hola! 👋 Gracias por escribirnos. ¿Nos compartes tu usuario de TikTok para ayudarte con lo que viste en el live?</textarea>
+            <div class="example"><span class="dim" style="font-size:12px">ASÍ LE LLEGA</span><span id="pf-prev"></span></div>
+            <button class="btn sm" style="align-self:flex-start" data-toast="Mensaje guardado">Guardar mensaje</button>
+          </div>
+        </details>
+      </div>
+      <div class="card slim" id="plan">
+        <h3>Monedero</h3>
+        <div class="mon-bal"><b id="mon-days">7</b><span class="muted">días disponibles</span></div>
+        <span class="help" id="pf-days">Hasta el 6 nov · 1 día = un día de lives · Compartido entre tus tiendas</span>
+        <div class="chips" id="pf-packs"></div>
+        <div class="gift" id="pf-gift"><span>🎁</span><span>Estás en tus <b>7 días gratis</b>. Puedes usar todo sin poner tarjeta.</span></div>
+        <span class="help">Elige cuántos días quieres agregar:</span>
+        <button class="btn block" id="pf-pay">Pagar S/ 20</button>
+        <span class="help">Cada día cuesta S/ 1.33 en todos los paquetes. Pagas solo cuando recargas. Si aún te quedan días, los nuevos se suman al final.</span>
+        <div class="row" style="justify-content:center"><span class="dim" style="font-size:13px">Yape · Plin · Tarjeta · procesado por Culqi</span></div>
+        <h3>Tus recargas</h3><div class="rec-list" id="rec-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============ OVERLAYS ============ -->
+<div class="scrim" id="scrim" hidden></div>
+
+<aside class="drawer" id="drawer" hidden aria-label="Mensajes de la persona">
+  <div class="row"><i class="pdot" id="d-dot" style="grid-row:auto"></i><b id="d-name" class="p-name"></b><span class="p-meta" id="d-count"></span><button class="x" data-close aria-label="Cerrar">✕</button></div>
+  <div class="bubbles" id="d-tl"></div>
+  <label class="field"><span>Etiqueta</span><select class="in" id="d-sel"></select><span class="help">Si la IA se equivocó, cámbiala y aprende.</span></label>
+  <div class="card slim" id="d-wa-box" style="background:var(--row)">
+    <h3>¿Te dio su número?</h3>
+    <div class="row"><span class="in mono" style="width:auto">+51</span><input class="in" id="d-num" inputmode="numeric" maxlength="9" placeholder="9 dígitos"></div>
+    <button class="btn soft" id="d-wa">Guardar y pasar a WhatsApp</button>
+  </div>
+  <div class="card slim" id="d-wa-off" hidden style="background:var(--row)"><h3>¿Te dio su número?</h3><span class="help">Conecta tu WhatsApp para guardarlo y conversar desde LiveLeads.</span><button class="btn soft" data-go="perfil">Ir a Perfil</button></div>
+  <span class="help">Se abre TikTok y le escribes tú. LiveLeads no envía mensajes por ti.</span>
+  <button class="pill dm" id="d-open" style="padding:12px"></button>
+  <button class="link" id="d-done" style="align-self:center"></button>
+</aside>
+
+<div class="modal" id="m-prod" hidden>
+  <form class="card top" id="f-prod" novalidate>
+    <div class="row"><h2 id="p-title">Nuevo producto</h2><button class="x" type="button" data-close>✕</button></div>
+    <div class="photo"><span class="empty-ic" style="font-size:24px">⊕</span><span style="font-size:13px">Foto (opcional)</span><div class="row"><button class="btn soft sm" type="button" data-toast="Elige una foto de tu galería">Subir foto</button><button class="btn sm" type="button" style="background:#24121b;color:var(--red-ink);border:1px solid #4a1d2e" data-toast="Elige un momento de tu último live">◉ Elegir de mi live</button></div></div>
+    <div class="two">
+      <label class="field"><span>Código *</span><input class="in mono" id="p-code" placeholder="B12" maxlength="6"></label>
+      <label class="field"><span>Precio *</span><input class="in" id="p-price" inputmode="decimal" placeholder="S/ 0.00"></label>
+    </div>
+    <span class="help" id="p-code-help">Tus clientes lo piden así en el live: «quiero B12»</span>
+    <label class="field"><span>Nombre *</span><input class="in" id="p-name" placeholder="Blusa de lino"></label>
+    <div class="two">
+      <label class="field"><span>Categoría</span><select class="in" id="p-cat"><option>General</option><option>Blusas</option><option>Casacas</option><option>Accesorios</option></select></label>
+      <div class="field"><span>&nbsp;</span><button class="toggle toggle-field" type="button" id="p-avail" aria-pressed="true"><i></i>Disponible</button></div>
+    </div>
+    <label class="field"><span>Descripción</span><input class="in" id="p-desc" placeholder="Manga corta, tela fresca"></label>
+    <div class="card slim" style="background:var(--row)">
+      <button class="toggle" type="button" id="p-var" aria-pressed="false"><i></i>Tiene colores o tallas</button>
+      <label class="field" id="p-units-f"><span>Unidades disponibles</span><input class="in" id="p-units" inputmode="numeric" value="1" style="width:140px"></label>
+      <div id="p-var-box" hidden><span class="help">Unidades por talla</span><div class="var-grid" id="p-var-grid"></div></div>
+    </div>
+    <span class="help err" id="p-err" hidden></span>
+    <div class="row form-actions"><button class="link" type="button" data-close>Cancelar</button><button class="btn" type="submit">Guardar producto</button></div>
+  </form>
+</div>
+
+<div class="modal" id="m-pay" hidden>
+  <div class="card top narrow">
+    <div class="row"><h2>Recargar <span id="pay-amt">S/ 20</span></h2><button class="x" data-close>✕</button></div>
+    <div class="chips" id="pay-method"><button class="chip on" data-m="yape">Yape</button><button class="chip" data-m="plin">Plin</button><button class="chip" data-m="tarjeta">Tarjeta</button></div>
+    <div id="pay-qr">
+      <div class="qr"><svg width="160" height="160" viewBox="0 0 21 21" aria-label="Código QR de ejemplo"><path fill="#0b0f1a" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zm1 1v5h5V1zm1 1h3v3h-3zM0 14h7v7H0zm1 1v5h5v-5zm1 1h3v3H2zM9 0h2v2H9zM8 3h3v2H8zM12 8h2v2h-2zM8 8h3v3H8zM15 9h3v2h-3zM9 13h2v3H9zM13 13h3v2h-3zM17 14h3v3h-3zM12 17h3v3h-3zM18 19h2v2h-2zM9 18h2v2H9z"/></svg></div>
+      <p class="muted" style="text-align:center;margin:8px 0 0">Escanea con <b id="pay-app">Yape</b> desde tu celular. En el celular se abre la app con el monto ya cargado.</p>
+    </div>
+    <div id="pay-card" hidden style="display:flex;flex-direction:column;gap:10px">
+      <label class="field"><span>Número de tarjeta</span><input class="in mono" placeholder="4111 1111 1111 1111"></label>
+      <div class="two"><label class="field"><span>Vence</span><input class="in mono" placeholder="MM/AA"></label><label class="field"><span>CVV</span><input class="in mono" placeholder="123"></label></div>
+      <span class="help">Prototipo: no ingreses datos reales.</span>
+    </div>
+    <label class="field"><span>Comprobante</span><div class="row"><select class="in" style="width:auto"><option>Boleta · DNI</option><option>Factura · RUC</option></select><input class="in" placeholder="Número"></div></label>
+    <button class="btn block" id="pay-ok">Ya pagué</button>
+  </div>
+</div>
+
+<div class="modal" id="m-wa" hidden>
+  <div class="card top narrow">
+    <div class="row"><h2>Conecta tu WhatsApp</h2><button class="x" data-close>✕</button></div>
+    <div class="qr"><svg width="160" height="160" viewBox="0 0 21 21" aria-label="Código QR de ejemplo"><path fill="#0b0f1a" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zm1 1v5h5V1zm1 1h3v3h-3zM0 14h7v7H0zm1 1v5h5v-5zm1 1h3v3H2zM9 0h2v2H9zM8 3h3v2H8zM12 8h2v2h-2zM8 8h3v3H8zM15 9h3v2h-3zM9 13h2v3H9zM13 13h3v2h-3zM17 14h3v3h-3zM12 17h3v3h-3zM18 19h2v2h-2zM9 18h2v2H9z"/></svg></div>
+    <span class="help" style="text-align:center">En tu celular abre WhatsApp, entra a Dispositivos vinculados y escanea este código.</span>
+    <button class="btn block" id="wa-done">Ya lo escaneé</button>
+  </div>
+</div>
+
+<div class="modal" id="m-store" hidden>
+  <div class="card top narrow">
+    <div class="row"><h2>Agregar tienda</h2><button class="x" data-close aria-label="Cerrar">✕</button></div>
+    <div class="steps"><i class="on" id="ss-1"></i><i id="ss-2"></i><i id="ss-3"></i></div>
+    <div id="sa-1" style="display:flex;flex-direction:column;gap:12px">
+      <label class="field"><span>@ de TikTok de la tienda</span><input class="in" id="sa-u" placeholder="@mitienda"></label>
+      <span class="help err" id="sa-err" hidden></span>
+      <button class="btn block" id="sa-next1">Buscar cuenta</button>
+    </div>
+    <div id="sa-2" hidden style="display:flex;flex-direction:column;gap:12px">
+      <h3>¿Es esta cuenta?</h3>
+      <div class="store-row"><span class="ico" style="width:40px;height:40px;background:#3a1626;color:var(--red-ink);box-shadow:none">♪</span><b class="grow" id="sa-found"></b></div>
+      <button class="btn block" id="sa-next2">Sí, es esta</button>
+      <button class="link" id="sa-back" style="align-self:center">Volver</button>
+    </div>
+    <div id="sa-3" hidden style="display:flex;flex-direction:column;gap:10px">
+      <h3>Elige sus etiquetas</h3>
+      <button class="btn block" data-sa="copy">Copiar las de mi tienda actual</button>
+      <button class="btn soft block" data-sa="reco">Usar las recomendadas</button>
+      <span class="help">WhatsApp es opcional. Lo conectas después desde Perfil.</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="m-end" hidden>
+  <div class="card top narrow">
+    <h2>¿Terminar tu live?</h2>
+    <p class="muted" style="margin:0">Dejamos de leer comentarios. Todo lo que ya capturamos queda guardado.</p>
+    <button class="btn block" id="end-ok">Terminar live</button>
+    <button class="link" data-close style="align-self:center">Seguir en vivo</button>
+  </div>
+</div>
+
+<div class="modal" id="m-sum" hidden>
+  <div class="card top narrow" style="align-items:center;text-align:center">
+    <div class="ll big">LL</div>
+    <h2>Tu live terminó</h2>
+    <div class="sum-stats"><div class="stat"><b id="sum-c">0</b><span>comentarios</span></div><div class="stat"><b id="sum-b">0</b><span>con intención de compra</span></div></div>
+    <div class="sum-tags" id="sum-tags"></div>
+    <p class="muted" style="margin:0" id="sum-txt"></p>
+    <button class="btn block" data-go="rescatar">Ver a quién escribir</button>
+    <button class="link" data-go="historial">Ver historial</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<nav class="demo-bar" aria-label="Atajos del prototipo">
+  <button data-go="login">Login</button><button data-go="registro">Registro</button><button data-go="ob-etiquetas">Onboarding</button><button data-go="live">Panel</button><button id="demo-sim">Conexión: normal</button>
+</nav>
+
+<script>
+/* LiveLeads · prototipo navegable. Todo el estado vive en memoria (y en sessionStorage si está disponible). */
+(function(){
+  var TAGS = [
+    {n:"Quiere comprar", d:"dice que lo quiere, lo separa o pide el link", c:"#2bb39a", k:["separ","quiero","lo llevo","me la","link","yape"]},
+    {n:"Pregunta precio", d:"pregunta cuánto cuesta o el precio", c:"#7b83f0", k:["precio","cuanto","cuánto","q. p","cuesta"]},
+    {n:"Pregunta talla", d:"pregunta por tallas, colores o medidas", c:"#f5a623", k:["talla"," m?","color","negro","medida"]},
+    {n:"Envío", d:"pregunta si envían a su ciudad o cuánto demora", c:"#29a8e0", k:["envi","envío","provincia","delivery","llega"]}
+  ];
+  var EXTRA = [{n:"Queja", d:"reclama por un pedido o atención", c:"#ef5350", k:["reclamo","no llegó","queja"]},{n:"Saludo", d:"solo saluda o comenta sin intención", c:"#8f9ab4", k:["hola","saludos","jaja"]}];
+
+  var st = load() || {
+    user:"@tutienda", mail:"tienda@correo.com", labels:[], days:7, pack:0, wa:true, stores:[{u:"@tutienda",wa:true}], rec:[],
+    products:[
+      {code:"B12", name:"Blusa de lino", price:45, cat:"Blusas", avail:true, desc:"Manga corta, tela fresca", vars:{S:1,M:2,L:1}},
+      {code:"B15", name:"Blusa de lino blanca", price:39.9, cat:"Blusas", avail:true, desc:"", units:1},
+      {code:"C03", name:"Casaca negra", price:89, cat:"Casacas", avail:false, desc:"Forro polar", units:0}
+    ],
+    lives:[
+      {id:"l1", ago:1, at:"29 oct. 2026 · 8:00 p. m.", dur:"1 h 12 min", c:148},
+      {id:"l2", ago:2, at:"28 oct. 2026 · 8:30 p. m.", dur:"58 min", c:121},
+      {id:"l3", ago:3, at:"27 oct. 2026 · 9:00 p. m.", dur:"1 h 30 min", c:143},
+      {id:"l4", ago:12, at:"18 oct. 2026 · 8:00 p. m.", dur:"1 h 5 min", c:96}
+    ],
+    people:[
+      {live:"l1", u:"rosa.ejemplo", t:"Pregunta precio", s:"pendiente", hot:true, said:[["20:42","q. precio de la casaca negra?"],["20:44","precio porfa 🙏"]]},
+      {live:"l1", u:"luz.ejemplo", t:"Quiere comprar", s:"pendiente", said:[["20:47","me la separas la B12 en M"]]},
+      {live:"l1", u:"mari.ejemplo", t:"Pregunta talla", s:"pendiente", said:[["20:51","tienes talla M en negro?"]]},
+      {live:"l1", u:"kevin.ejemplo", t:"Envío", s:"pendiente", said:[["20:55","envías a Trujillo?"]]},
+      {live:"l1", u:"ana.ejemplo", t:"Quiere comprar", s:"escrito", said:[["21:02","lo llevo, cómo pago?"]]},
+      {live:"l1", u:"pedro.ejemplo", t:"Pregunta precio", s:"whatsapp", said:[["21:05","cuánto cuesta la B15?"]], wa:"987654321"},
+      {live:"l1", u:"lulu.ejemplo", t:"Pregunta talla", s:"pendiente", said:[["21:09","hay L?"]]},
+      {live:"l2", u:"sofi.ejemplo", t:"Quiere comprar", s:"pendiente", said:[["20:41","la quiero en azul"],["20:43","la quiero en azul"]], hot:true},
+      {live:"l2", u:"javi.ejemplo", t:"Envío", s:"escrito", said:[["20:58","llega a Cusco?"]]},
+      {live:"l3", u:"nora.ejemplo", t:"Pregunta precio", s:"pendiente", said:[["21:12","cuánto la blusa?"]]},
+      {live:"l3", u:"beto.ejemplo", t:"Quiere comprar", s:"whatsapp", said:[["21:20","te yapeo ahora"]], wa:"912345678"},
+      {live:"l4", u:"carla.ejemplo", t:"Pregunta talla", s:"escrito", said:[["20:30","tienes talla S?"]]}
+    ]
+  };
+  if (!st.labels.length && st._seeded) {}
+  var view = "login", resState = "todos", resTag = "", liveTag = "", payM = "yape", editIdx = -1;
+  var PACKS = [{p:20,d:15},{p:40,d:30},{p:80,d:60}];
+  var TITLES = {live:"Live", rescatar:"Por rescatar", historial:"Historial", etiquetas:"Etiquetas", catalogo:"Catálogo", perfil:"Perfil"};
+  var APP = Object.keys(TITLES);
+
+  function $(s,r){return (r||document).querySelector(s)}
+  function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+  function save(){try{sessionStorage.setItem("ll-proto-6",JSON.stringify(st))}catch(e){}}
+  function load(){try{return JSON.parse(sessionStorage.getItem("ll-proto-6"))}catch(e){return null}}
+  function soles(n){return "S/ "+Number(n).toFixed(2)}
+  function tagOf(n){return st.labels.concat(TAGS,EXTRA).filter(function(t){return t.n===n})[0]||{n:n,c:"#8f9ab4"}}
+  function tagHtml(n){var t=tagOf(n);return '<span class="tag" style="background:'+t.c+'26;color:'+t.c+'"><i class="sw" style="background:'+t.c+'"></i>'+n+'</span>'}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function toast(msg){var t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){t.hidden=true},2200)}
+
+  var ICO_MSG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1-5A8 8 0 1 1 21 12z"/></svg>';
+  var ICO_DM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 10h8"/></svg>';
+  function tagMeta(n){var t=tagOf(n);return '<span class="p-meta" style="color:'+t.c+'">'+esc(n)+'</span>';}
+  function personRow(p,i){
+    var last=p.said[p.said.length-1], t=tagOf(p.t), n=p.said.length;
+    var dm=p.s==="pendiente"?'<button class="pill dm" data-dm="'+i+'">'+ICO_DM+'Escribirle al DM</button>':(p.s==="escrito"?'<button class="pill done" data-dm="'+i+'">Escrito ✓</button>':'<button class="pill done" data-msgs="'+i+'">En WhatsApp</button>');
+    return '<div class="person"><div class="p-main"><i class="pdot" style="background:'+t.c+'"></i><div><b class="p-name" style="color:'+t.c+'">'+esc(p.u)+(p.hot?" 🔥":"")+'</b>'+tagMeta(p.t)+'</div><span class="p-quote">“'+esc(last[1])+'”</span></div><div class="p-acts"><button class="pill" data-msgs="'+i+'">'+ICO_MSG+n+(n===1?" mensaje":" mensajes")+'</button>'+dm+'</div></div>';
+  }
+  document.addEventListener("click",function(e){
+    var m=e.target.closest("[data-msgs]"); if(m){openPerson(+m.getAttribute("data-msgs"));return;}
+    var d=e.target.closest("[data-dm]"); if(d) sendDm(+d.getAttribute("data-dm"));
+  });
+  function sendDm(i){var p=st.people[i];toast("Abrimos @"+p.u+" en TikTok para que le escribas");if(p.s==="pendiente"){p.s="escrito";save();render();}}
+
+  var MAX_STORES=3, saUser="";
+  function activeStore(){ var a=st.stores.filter(function(x){return x.u===st.user})[0]; if(!a){ st.stores[0].u=st.user; a=st.stores[0]; } return a; }
+  function renderStores(){
+    var a=activeStore(); a.wa=st.wa; var full=st.stores.length>=MAX_STORES;
+    $("#store-btn").textContent=st.user+" ▾";
+    $("#store-menu").innerHTML=st.stores.map(function(x,i){return '<button class="'+(x.u===st.user?"on":"")+'" data-store="'+i+'">'+esc(x.u)+(x.u===st.user?" ✓":"")+'</button>'}).join("")+'<button data-go="perfil" data-anchor="tiendas">Administrar tiendas</button>';
+    $("#st-count").textContent=st.stores.length+" de "+MAX_STORES;
+    $("#st-list").innerHTML=st.stores.map(function(x,i){var on=x.u===st.user;return '<div class="store-row"><span class="dot'+(x.wa?"":" off")+'"></span><span class="grow"><b>'+esc(x.u)+'</b><br><span class="dim" style="font-size:12.5px">'+(x.wa?"WhatsApp conectado":"WhatsApp sin conectar")+'</span></span>'+(on?'<span class="badge-ok">Activa</span>':'<button class="pill" data-store="'+i+'">Cambiar</button>')+'</div>'}).join("");
+    $("#st-add").hidden=full;
+    $("#st-help").textContent=full?"Llegaste al límite de "+MAX_STORES+" tiendas. Para cambiar una, escríbenos por WhatsApp.":"Puedes tener hasta "+MAX_STORES+" tiendas con el mismo Monedero. No se cobra por tienda.";
+  }
+  function saStep(n){ [1,2,3].forEach(function(i){ $("#sa-"+i).hidden=i!==n; $("#ss-"+i).className=i<=n?"on":""; }); }
+  document.addEventListener("click",function(e){
+    var b=e.target.closest("[data-store]");
+    if(b){ if(L.on){toast("Termina tu live para cambiar de tienda");return;} var x=st.stores[+b.getAttribute("data-store")]; st.user=x.u; st.wa=x.wa; save(); $("#store-menu").hidden=true; render(); toast("Ahora estás en "+x.u); return; }
+    if(e.target.id==="store-btn"){ $("#store-menu").hidden=!$("#store-menu").hidden; return; }
+    if(!e.target.closest("#store-menu")) $("#store-menu").hidden=true;
+    var c=e.target.closest("[data-sa]");
+    if(c){ st.stores.push({u:saUser,wa:false}); save(); closeAll(); render(); toast("Tienda "+saUser+" agregada"); }
+  });
+  $("#st-add").onclick=function(){ $("#sa-u").value=""; $("#sa-err").hidden=true; saStep(1); openOv("#m-store"); };
+  $("#sa-next1").onclick=function(){
+    var v=$("#sa-u").value.trim(), err=""; if(v&&v[0]!=="@") v="@"+v;
+    if(!/^@[\w.]{2,}$/.test(v)) err="Escribe el @ de TikTok de la tienda.";
+    else if(st.stores.some(function(x){return x.u.toLowerCase()===v.toLowerCase()})) err="Esa tienda ya está en tu cuenta.";
+    $("#sa-err").textContent=err; $("#sa-err").hidden=!err; if(err)return;
+    saUser=v; $("#sa-found").textContent=v; saStep(2);
+  };
+  $("#sa-next2").onclick=function(){saStep(3);};
+  $("#sa-back").onclick=function(){saStep(1);};
+
+  /* ---------- router ---------- */
+  function go(v, anchor){
+    var here = location.pathname.replace(/\/+$/, "") || "/";
+    if (window.LL_ROUTES && window.LL_ROUTES[v] && here !== window.LL_ROUTES[v]) { save(); location.href = window.LL_ROUTES[v] + (anchor?"#"+anchor:""); return; }
+    view = v; closeAll();
+    var inApp = APP.indexOf(v) > -1;
+    $("#shell").hidden = !inApp;
+    $$("[data-view]").forEach(function(el){ el.hidden = el.getAttribute("data-view") !== v; });
+    if (inApp) {
+      $("#top-title").textContent = TITLES[v];
+      $$(".nav").forEach(function(n){ n.classList.toggle("on", n.getAttribute("data-go")===v); });
+      if (innerWidth <= 820) { $("#shell").classList.remove("mopen"); $("#side-scrim").hidden = true; }
+    }
+    render();
+    if (anchor) { var a=document.getElementById(anchor); if(a) a.scrollIntoView({behavior:"smooth"}); } else window.scrollTo(0,0);
+  }
+  document.addEventListener("click", function(e){
+    var g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.getAttribute("data-go"), g.getAttribute("data-anchor")); return; }
+    var t = e.target.closest("[data-toast]"); if (t) { toast(t.getAttribute("data-toast")); }
+    if (e.target.closest("[data-close]") || e.target.id==="scrim") closeAll();
+  });
+  function closeAll(){ ["#drawer","#m-prod","#m-pay","#m-sum","#m-wa","#m-end","#m-store","#scrim"].forEach(function(s){$(s).hidden=true}); }
+  function openOv(s){ $("#scrim").hidden=false; $(s).hidden=false; }
+
+  $("#burger").onclick = function(){
+    var sh=$("#shell");
+    if (innerWidth <= 820) { sh.classList.toggle("mopen"); $("#side-scrim").hidden = !sh.classList.contains("mopen"); }
+    else sh.classList.toggle("closed");
+  };
+  $("#side-scrim").onclick = function(){ $("#shell").classList.remove("mopen"); this.hidden=true; };
+
+  /* ---------- auth ---------- */
+  $("#f-login").onsubmit = function(e){ e.preventDefault();
+    var ok = $("#l-user").value.trim() && $("#l-pass").value.trim();
+    $("#l-err").hidden = !!ok; if (!ok) return;
+    if ($("#l-user").value.trim().indexOf("@")===0) st.user=$("#l-user").value.trim();
+    go(st.labels.length ? "live" : "ob-etiquetas"); };
+  $("#f-reg").onsubmit = function(e){ e.preventDefault();
+    var tt=$("#r-tt").value.trim(), m=$("#r-mail").value.trim(), p=$("#r-pass").value, err="";
+    if (!/^@?[\w.]{2,}$/.test(tt)) err="Escribe tu @ de TikTok.";
+    else if (!/^\S+@\S+\.\S+$/.test(m)) err="Revisa tu correo.";
+    else if (p.length<8) err="La contraseña necesita al menos 8 caracteres.";
+    $("#r-err").textContent=err; $("#r-err").hidden=!err; if (err) return;
+    st.user = tt[0]==="@"?tt:"@"+tt; st.mail=m; st.labels=[]; st.wa=false; save(); $("#v-mail").textContent=m; go("verificar"); };
+  $("#f-ver").onsubmit = function(e){ e.preventDefault(); var ok=/^\d{6}$/.test($("#v-code").value); $("#v-err").hidden=ok; if(ok){ toast("Correo confirmado. Ya tienes 7 días gratis"); go("ob-etiquetas"); } };
+
+  /* ---------- onboarding ---------- */
+  $("#ob-reco").onclick = function(){ st.labels = TAGS.map(function(t){return Object.assign({},t)}); save(); renderOb(); toast("Listo: 4 etiquetas guardadas"); };
+  $("#ob-next1").onclick = function(){ go("ob-tiktok"); };
+  function renderOb(){
+    $("#ob-list").innerHTML = st.labels.map(function(t){return '<div class="item"><i class="sw" style="background:'+t.c+';width:14px;height:14px"></i><span class="grow"><b>'+esc(t.n)+'</b><br><span class="dim" style="font-size:13px">'+esc(t.d)+'</span></span></div>'}).join("");
+    $("#ob-next1").disabled = !st.labels.length;
+    $("#ob-reco").hidden = !!st.labels.length;
+  }
+
+  /* ---------- live ---------- */
+  var POOL = [["luz.ejemplo","holaa saludos desde Arequipa 👋"],["rosa.ejemplo","q. precio de la casaca negra?"],["jhon.ejemplo","jajaja ya llegué"],["mari.ejemplo","tienes talla M?"],["kevin.ejemplo","envías a Trujillo?"],["rosa.ejemplo","precio porfa 🙏"],["ana.ejemplo","me la separas la B12"],["pedro.ejemplo","cuánto cuesta la B15?"],["lulu.ejemplo","hay en color negro?"],["rosa.ejemplo","la quiero!! cómo pago?"],["sofi.ejemplo","delivery a Lima norte?"],["javi.ejemplo","❤️❤️"],["mari.ejemplo","y en L?"],["ana.ejemplo","ya te yapeo"]];
+  var L = {on:false, i:0, feed:[], timer:null, clock:null, t0:0, count:{}, done:{}, missed:0};
+  var SIMS = [["ok","Conexión: normal"],["nolive","Conexión: sin live"],["fail","Conexión: con falla"]], sim = 0;
+  function labelsNow(){ return st.labels.length ? st.labels : TAGS; }
+  function rank(n){ var l=labelsNow(); for (var i=0;i<l.length;i++) if (l[i].n===n) return i; return 99; }
+  function classify(txt){
+    var low=txt.toLowerCase(), labels=st.labels.length?st.labels:TAGS;
+    for (var i=0;i<labels.length;i++){ var k=labels[i].k||[labels[i].n.toLowerCase()]; for (var j=0;j<k.length;j++) if (low.indexOf(k[j])>-1) return labels[i].n; }
+    return null;
+  }
+  $("#demo-sim").onclick = function(){ sim=(sim+1)%SIMS.length; this.textContent=SIMS[sim][1]; };
+  function connect(){
+    var b=$("#live-start"); $("#live-err").hidden=true; b.disabled=true; b.textContent="Esperando live…"; $("#live-acc-state").textContent="Buscando el live de "+st.user+"…";
+    setTimeout(function(){
+      b.disabled=false; b.textContent="Iniciar live"; $("#live-acc-state").textContent="Listo para conectar";
+      if (SIMS[sim][0]==="nolive"){ $("#err-t").textContent="Aún no vemos tu live"; $("#err-d").textContent="Ábrelo en TikTok con "+st.user+" y toca Reintentar."; $("#live-err").hidden=false; return; }
+      if (SIMS[sim][0]==="fail"){ $("#err-t").textContent="Tu live está activo, pero no logramos conectarnos"; $("#err-d").textContent="No es un problema tuyo. Toca Reintentar. Si sigue igual, escríbenos por WhatsApp."; $("#live-err").hidden=false; return; }
+      L={on:true,i:0,feed:[],count:{},done:{},missed:0,t0:Date.now()};
+      document.body.classList.add("live-on");
+      $("#live-idle").hidden=true; $("#live-idle-foot").hidden=true; $("#live-on").hidden=false; $("#top-live").hidden=false;
+      L.timer=setInterval(tick,1300); L.clock=setInterval(clock,1000); tick(); renderLive();
+    },1600);
+  }
+  $("#live-start").onclick = function(){ if (!st.days){ toast("Recarga días para conectar tu live"); go("perfil","plan"); return; } connect(); };
+  $("#err-retry").onclick = connect;
+  function clock(){ var s=Math.floor((Date.now()-L.t0)/1000); $("#top-timer").textContent="EN VIVO · "+String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+  function tick(){
+    var c=POOL[L.i%POOL.length]; L.i++;
+    L.count[c[0]]=(L.count[c[0]]||0)+1;
+    L.feed.unshift({u:c[0], txt:c[1], t:classify(c[1]), hot:L.count[c[0]]>1, isNew:L.count[c[0]]===1});
+    if (window.scrollY>160){ L.missed++; var n=$("#live-new"); n.hidden=false; n.textContent="↑ "+L.missed+(L.missed===1?" nuevo":" nuevos"); renderStats(); }
+    else renderLive();
+  }
+  function liveNew(){ L.missed=0; $("#live-new").hidden=true; renderLive(); }
+  $("#live-new").onclick=function(){ window.scrollTo(0,0); liveNew(); };
+  window.addEventListener("scroll",function(){ if (L.on && L.missed && window.scrollY<80) liveNew(); });
+  function livePeople(){
+    var m={}, a=[];
+    L.feed.slice().reverse().forEach(function(f){ var p=m[f.u]; if(!p){ p=m[f.u]={u:f.u,t:null,n:0,last:"",fresh:true}; a.push(p); } p.n++; p.last=f.txt; p.fresh=p.n===1; if(f.t) p.t=f.t; });
+    return a.filter(function(p){return p.t}).sort(function(x,y){ return (rank(x.t)-rank(y.t)) || (y.n-x.n); });
+  }
+  function renderStats(){
+    var ppl=livePeople(), open=ppl.filter(function(p){return !L.done[p.u]});
+    $("#st-c").textContent=L.feed.length; $("#st-b").textContent=ppl.length; $("#st-h").textContent=ppl.filter(function(p){return p.n>1}).length; $("#seg-n").textContent=open.length;
+    return open;
+  }
+  $("#live-stop").onclick = function(){ openOv("#m-end"); };
+  $("#end-ok").onclick = function(){
+    clearInterval(L.timer); clearInterval(L.clock);
+    var ppl=livePeople(), tags={}, id="l"+Date.now(), mins=Math.max(1,Math.round((Date.now()-L.t0)/60000));
+    st.lives.unshift({id:id, ago:0, at:"Hoy · recién terminado", dur:mins+" min", c:L.feed.length});
+    ppl.slice().reverse().forEach(function(f){
+      tags[f.t]=(tags[f.t]||0)+1;
+      var said=L.feed.filter(function(x){return x.u===f.u}).reverse().map(function(x){return ["hoy",x.txt]});
+      st.people.unshift({live:id, u:f.u, t:f.t, s:"pendiente", hot:f.n>1, said:said});
+    });
+    $("#sum-c").textContent=L.feed.length; $("#sum-b").textContent=ppl.length;
+    $("#sum-tags").innerHTML=Object.keys(tags).sort(function(a,b){return rank(a)-rank(b)}).map(function(t){return '<div>'+tagHtml(t)+'<b>'+tags[t]+'</b></div>'}).join("");
+    $("#sum-txt").textContent=ppl.length?"Ya las ordenamos: primero quienes quieren comprar.":"Esta vez nadie mostró intención de compra.";
+    L.on=false; document.body.classList.remove("live-on");
+    $("#live-on").hidden=true; $("#live-idle").hidden=false; $("#live-idle-foot").hidden=false; $("#top-live").hidden=true;
+    save(); closeAll(); render(); openOv("#m-sum");
+  };
+  $("#say-btn").onclick = function(){
+    var c={}; L.feed.forEach(function(f){ if(f.t) c[f.t]=(c[f.t]||0)+1; });
+    var top=Object.keys(c).sort(function(a,b){return c[b]-c[a]})[0];
+    var tips={"Pregunta precio":"Varios preguntan el precio. Dilo en voz alta y déjalo fijado: «La casaca negra está a S/ 89».","Pregunta talla":"Preguntan por tallas. Muestra la prenda y di qué tallas quedan.","Envío":"Preguntan por envíos. Cuenta a qué ciudades llegas y en cuántos días.","Quiere comprar":"Hay gente lista para comprar. Explica cómo separar y pagar con Yape o Plin."};
+    var b=$("#say-box"); b.hidden=false; b.textContent = top ? "💡 "+(tips[top] || "Responde primero a quienes insisten 🔥.") :"💡 Aún no hay preguntas. Saluda a los que van llegando y presenta tu producto estrella.";
+  };
+  function renderLive(){
+    var labels=labelsNow(), open=renderStats(), q=$("#live-q").value.trim().toLowerCase();
+    var cnt={}; open.forEach(function(p){cnt[p.t]=(cnt[p.t]||0)+1});
+    $("#live-filter").innerHTML='<button class="chip'+(liveTag?"":" on")+'" data-lt=">'+open.length+' Todos</button>'+labels.map(function(t){return '<button class="chip'+(liveTag===t.n?" on":"")+'" data-lt="'+esc(t.n)+'">'+(cnt[t.n]||0)+' '+esc(t.n)+'</button>'}).join("");
+    var list=open.filter(function(p){return (!liveTag||p.t===liveTag)&&(!q||(p.u+" "+L.feed.filter(function(f){return f.u===p.u}).map(function(f){return f.txt}).join(" ")).toLowerCase().indexOf(q)>-1)});
+    $("#live-feed").innerHTML=list.slice(0,20).map(function(p){var t=tagOf(p.t);return '<div class="person"><div class="p-main"><i class="pdot" style="background:'+t.c+'"></i><div><b class="p-name" style="color:'+t.c+'">'+esc(p.u)+(p.n>1?" 🔥":"")+(p.fresh?" 🆕":"")+'</b>'+tagMeta(p.t)+(p.n>1?'<span class="p-meta dim">×'+p.n+'</span>':'')+'</div><span class="p-quote">“'+esc(p.last)+'”</span></div><div class="p-acts one"><button class="pill" data-at="'+esc(p.u)+'">✓ Atender</button></div></div>'}).join("") || '<div class="empty"><span class="ic">💬</span>'+(q?"No encontramos ese comentario.":"Aquí aparecen quienes quieren comprar.")+'</div>';
+    var chat=L.feed.filter(function(f){return !q||(f.u+" "+f.txt).toLowerCase().indexOf(q)>-1}).slice(0,30);
+    $("#live-chat").innerHTML=chat.map(function(f){var c=f.t?tagOf(f.t).c:"var(--soft)";return '<div class="chatline"><div class="top-l"><span class="nm" style="color:'+c+'">'+esc(f.u)+'</span><span class="tm">ahora</span></div><span>'+esc(f.txt)+'</span></div>'}).join("") || '<div class="empty"><span class="ic">💬</span>Esperando el primer comentario…</div>';
+  }
+  $("#live-filter").onclick=function(e){var b=e.target.closest("[data-lt]");if(!b)return;liveTag=b.getAttribute("data-lt");renderLive();};
+  $("#live-feed").onclick=function(e){var b=e.target.closest("[data-at]");if(!b)return;L.done[b.getAttribute("data-at")]=1;renderLive();toast("Atendida. Sigue guardada en Por rescatar");};
+  $("#live-seg").onclick=function(e){var b=e.target.closest("[data-v]");if(!b)return;$("#live-on").setAttribute("data-v",b.getAttribute("data-v"));$$("#live-seg button").forEach(function(x){x.classList.toggle("on",x===b)});};
+  $("#live-lens").onclick=function(){var i=$("#live-q");i.hidden=!i.hidden;if(!i.hidden)i.focus();else{i.value="";renderLive();}};
+  $("#live-q").oninput=renderLive;
+
+  /* ---------- por rescatar ---------- */
+  function renderRes(){
+    var labels=labelsNow(), last=st.lives[0], q=$("#res-q").value.trim().toLowerCase();
+    var mine=st.people.map(function(p,i){return Object.assign({i:i},p)}).filter(function(p){return p.live===last.id});
+    $("#res-sub").textContent="Último live · "+last.at;
+    var cnt={}; mine.forEach(function(p){cnt[p.t]=(cnt[p.t]||0)+1});
+    $("#res-tags").innerHTML='<button class="chip'+(resTag?"":" on")+'" data-rt="">'+mine.length+' Todos</button>'+labels.map(function(t){return '<button class="chip'+(resTag===t.n?" on":"")+'" data-rt="'+esc(t.n)+'">'+(cnt[t.n]||0)+' '+esc(t.n)+'</button>'}).join("");
+    $$("#res-state .chip").forEach(function(c){c.classList.toggle("on",c.getAttribute("data-st")===resState)});
+    var order={pendiente:0,escrito:1,whatsapp:2};
+    var list=mine.filter(function(p){return (resState==="todos"||p.s===resState)&&(!resTag||p.t===resTag)&&(!q||(p.u+" "+p.said.map(function(x){return x[1]}).join(" ")).toLowerCase().indexOf(q)>-1)})
+      .sort(function(a,b){return (order[a.s]-order[b.s]) || (rank(a.t)-rank(b.t)) || (b.said.length-a.said.length)});
+    $("#res-list").innerHTML=list.map(function(p){return personRow(p,p.i)}).join("") || '<div class="empty"><span class="ic">◎</span>No hay personas con este filtro.<br><span class="dim">Cuando hagas tu live, aparecen aquí ordenadas por interés.</span><button class="btn sm" data-go="live">Ir a Live</button></div>';
+    var pend=mine.filter(function(p){return p.s==="pendiente"}).length; $("#nav-badge").textContent=pend; $("#nav-badge").hidden=!pend;
+  }
+  $("#res-q").oninput=renderRes;
+  $("#res-state").onclick=function(e){var b=e.target.closest("[data-st]");if(!b)return;resState=b.getAttribute("data-st");renderRes();};
+  $("#res-tags").onclick=function(e){var b=e.target.closest("[data-rt]");if(!b)return;resTag=b.getAttribute("data-rt");renderRes();};
+  var cur=-1;
+  function openPerson(i){
+    cur=i; var p=st.people[i], t=tagOf(p.t), n=p.said.length;
+    $("#d-dot").style.background=t.c; $("#d-name").textContent=p.u+(p.hot?" 🔥":""); $("#d-name").style.color=t.c;
+    $("#d-count").textContent=n+(n===1?" mensaje":" mensajes");
+    var grp=[],seen={};p.said.forEach(function(s){var k=s[1].toLowerCase();if(seen[k]){seen[k].n++}else{seen[k]={x:s[1],n:1};grp.push(seen[k])}});
+    $("#d-tl").innerHTML=grp.map(function(g){return '<div class="bubble"><span>'+esc(g.x)+'</span>'+(g.n>1?'<span class="xn">×'+g.n+'</span>':'')+'</div>'}).join("");
+    var labels=labelsNow().concat(EXTRA);
+    $("#d-sel").innerHTML=labels.map(function(l){return '<option'+(l.n===p.t?" selected":"")+'>'+esc(l.n)+'</option>'}).join("");
+    $("#d-wa-box").hidden=p.s==="whatsapp"||!st.wa; $("#d-wa-off").hidden=p.s==="whatsapp"||st.wa; $("#d-num").value="";
+    $("#d-open").innerHTML=ICO_DM+"Escribirle al DM";
+    $("#d-done").textContent=p.s==="escrito"?"Marcar como pendiente":"Marcar como escrito";
+    openOv("#drawer");
+  }
+  $("#d-sel").onchange=function(){st.people[cur].t=this.value;save();render();toast("Etiqueta cambiada. La IA aprende de esto.");};
+  $("#d-open").onclick=function(){sendDm(cur);};
+  $("#d-done").onclick=function(){var p=st.people[cur];p.s=p.s==="escrito"?"pendiente":"escrito";save();render();closeAll();};
+  $("#d-wa").onclick=function(){var n=$("#d-num").value.trim();if(!/^9\d{8}$/.test(n)){$("#d-num").classList.add("in","err");toast("El número tiene 9 dígitos y empieza con 9");return;}$("#d-num").classList.remove("err");st.people[cur].s="whatsapp";st.people[cur].wa=n;save();render();closeAll();toast("Guardado. Ya puedes escribirle por WhatsApp");};
+
+  /* ---------- historial ---------- */
+  var hisDays=7, hisOpen=null, hisTag="", hisState="todos", hisHot=false, hisSort="interes";
+  function hisStaticInfo(){
+    $("#his-q-top").innerHTML=["precio de la casaca","talla M","envío a provincia","cómo pagar"].map(function(q){return '<span class="chip">'+q+'</span>'}).join("");
+    var hours=[2,3,5,9,14,11,6];
+    $("#his-bars").innerHTML=hours.map(function(v){return '<i class="'+(v===14?"hi":"")+'" style="height:'+v/14*100+'%"></i>'}).join("");
+    $("#his-peak").textContent="Tu mejor horario: 21:00 a 22:00.";
+  }
+  function renderHis(){
+    hisStaticInfo();
+    var q=$("#his-q").value.trim().toLowerCase(), labels=labelsNow();
+    var lives=st.lives.filter(function(l){return l.ago<=hisDays}), ids={}, comments=0;
+    lives.forEach(function(l){ids[l.id]=1;comments+=l.c});
+    var all=st.people.map(function(p,i){return Object.assign({i:i},p)}).filter(function(p){return ids[p.live]});
+    var found=all.filter(function(p){return !q||(p.u+" "+p.said.map(function(x){return x[1]}).join(" ")).toLowerCase().indexOf(q)>-1});
+    var pend=all.filter(function(p){return p.s==="pendiente"}).length, wa=all.filter(function(p){return p.s==="whatsapp"}).length;
+    $("#his-stats").innerHTML='<div class="hstat"><b>'+comments+'</b>Comentaron</div><button class="hstat'+(hisState==="todos"?" on":"")+'" data-hst="todos"><b>'+all.length+'</b>Con intención de compra</button><button class="hstat'+(hisState==="pendiente"?" on":"")+'" data-hst="pendiente"><b>'+pend+'</b>Por escribir</button><button class="hstat'+(hisState==="whatsapp"?" on":"")+'" data-hst="whatsapp"><b>'+wa+'</b>En WhatsApp</button>';
+    var okState=function(p){return (hisState==="todos"||p.s===hisState)&&(!hisHot||p.hot||p.said.length>1)};
+    var cnt={}, base=found.filter(okState); base.forEach(function(p){cnt[p.t]=(cnt[p.t]||0)+1});
+    $("#his-tags").innerHTML='<button class="chip'+(hisTag?"":" on")+'" data-ht="">'+base.length+' Todos</button>'+labels.map(function(t){return '<button class="chip'+(hisTag===t.n?" on":"")+'" data-ht="'+esc(t.n)+'">'+(cnt[t.n]||0)+' '+esc(t.n)+'</button>'}).join("");
+    var list=base.filter(function(p){return !hisTag||p.t===hisTag}).sort(function(a,b){return hisSort==="mensajes"?(b.said.length-a.said.length)||(rank(a.t)-rank(b.t)):(rank(a.t)-rank(b.t))||(b.said.length-a.said.length)});
+    var nF=(hisState!=="todos"?1:0)+(hisHot?1:0)+(hisSort!=="interes"?1:0);
+    $("#his-fbtn").textContent="Filtros"+(nF?" · "+nF:"");
+    $$("#his-range .chip").forEach(function(c){c.classList.toggle("on",+c.getAttribute("data-r")===hisDays)});
+    $$("#his-state .chip").forEach(function(c){c.classList.toggle("on",c.getAttribute("data-hst")===hisState)});
+    $$("#his-sort .chip").forEach(function(c){c.classList.toggle("on",c.getAttribute("data-so")===hisSort)});
+    $("#his-hot").classList.toggle("on",hisHot);
+    var narrowed=q||nF||hisTag, shown=lives.filter(function(l){return !narrowed||list.some(function(p){return p.live===l.id})});
+    if (hisOpen===null && shown[0]) hisOpen=shown[0].id;
+    $("#his-note").textContent=shown.length+(shown.length===1?" sesión":" sesiones")+" · "+list.length+" leads";
+    $("#his-lives").innerHTML=shown.map(function(l){
+      var mine=list.filter(function(p){return p.live===l.id}), open=narrowed||hisOpen===l.id;
+      var head='<button class="sess-head'+(open?" open":"")+'" data-sess="'+l.id+'"><i class="pdot" style="background:var(--ok);grid-row:auto"></i><span style="min-width:0"><b>'+esc(st.user)+'</b> <span class="badge-ok">Finalizado</span><br><span class="sess-meta">'+esc(l.at)+' · '+esc(l.dur)+'</span></span><span class="sess-count">'+mine.length+' leads '+(open?"⌃":"⌄")+'</span></button>';
+      if (!open) return '<div class="sess">'+head+'</div>';
+      return '<div class="sess">'+head+'<div class="sess-body"><div>'+mine.map(function(p){return personRow(p,p.i)}).join("")+'</div></div></div>';
+    }).join("") || '<div class="empty"><span class="ic">◷</span>Nadie coincide con estos filtros.<button class="btn sm" id="his-empty-clear">Limpiar filtros</button></div>';
+  }
+  function hisClear(){hisTag="";hisState="todos";hisHot=false;hisSort="interes";$("#his-q").value="";renderHis();}
+  $("#his-range").onclick=function(e){var b=e.target.closest("[data-r]");if(!b)return;hisDays=+b.getAttribute("data-r");hisOpen=null;renderHis();};
+  $("#f-his").onsubmit=function(e){e.preventDefault();renderHis();};
+  $("#his-q").oninput=renderHis;
+  $("#his-fbtn").onclick=function(){var f=$("#his-fpanel");f.hidden=!f.hidden;this.setAttribute("aria-expanded",String(!f.hidden));};
+  $("#his-clear").onclick=hisClear;
+  $("#his-hot").onclick=function(){hisHot=!hisHot;renderHis();};
+  $("#his-sort").onclick=function(e){var b=e.target.closest("[data-so]");if(b){hisSort=b.getAttribute("data-so");renderHis();}};
+  $("#his-tags").onclick=function(e){var c=e.target.closest("[data-ht]");if(c){hisTag=c.getAttribute("data-ht");renderHis();}};
+  document.addEventListener("click",function(e){var c=e.target.closest("[data-hst]");if(c){hisState=c.getAttribute("data-hst");renderHis();}if(e.target.id==="his-empty-clear")hisClear();});
+  $("#his-lives").onclick=function(e){var h=e.target.closest("[data-sess]");if(h){var id=h.getAttribute("data-sess");hisOpen=hisOpen===id?"":id;renderHis();}};
+
+  /* ---------- etiquetas ---------- */
+  function renderTags(){
+    var have=st.labels.map(function(t){return t.n});
+    $("#tag-sugg").innerHTML=TAGS.concat(EXTRA).filter(function(t){return have.indexOf(t.n)<0}).map(function(t){return '<button class="chip" data-add="'+esc(t.n)+'"><i class="sw" style="background:'+t.c+'"></i> + '+esc(t.n)+'</button>'}).join("");
+    $("#tag-list").innerHTML=st.labels.map(function(t,i){return '<div class="item"><i class="sw" style="background:'+t.c+';width:14px;height:14px"></i><span class="grow"><b>'+esc(t.n)+'</b><input class="in" data-desc="'+i+'" value="'+esc(t.d||"")+'" placeholder="Describe cuándo va aquí un comentario" style="margin-top:6px;padding:8px 10px;font-size:13px"></span><button class="x" data-del="'+i+'" aria-label="Borrar etiqueta">✕</button></div>'}).join("") || '<div class="empty"><span class="ic">⚌</span>No hay etiquetas todavía<br><span class="dim">Toca una sugerida o escribe la tuya</span></div>';
+  }
+  $("#tag-sugg").onclick=function(e){var b=e.target.closest("[data-add]");if(!b)return;var t=TAGS.concat(EXTRA).filter(function(x){return x.n===b.getAttribute("data-add")})[0];st.labels.push(Object.assign({},t));save();renderTags();toast("Etiqueta agregada");};
+  $("#tag-list").onclick=function(e){var b=e.target.closest("[data-del]");if(!b)return;st.labels.splice(+b.getAttribute("data-del"),1);save();renderTags();toast("Etiqueta borrada");};
+  $("#tag-list").oninput=function(e){var i=e.target.getAttribute("data-desc");if(i!==null){st.labels[+i].d=e.target.value;save();}};
+  $("#f-tag").onsubmit=function(e){e.preventDefault();var v=$("#tag-in").value.trim();if(!v)return;if(st.labels.some(function(t){return t.n.toLowerCase()===v.toLowerCase()})){toast("Esa etiqueta ya existe");return;}var cols=["#c47cf0","#ff8a65","#4dd0e1","#aed581"];st.labels.push({n:v,d:"",c:cols[st.labels.length%cols.length],k:[v.toLowerCase()]});$("#tag-in").value="";save();renderTags();toast("Etiqueta agregada");};
+
+  /* ---------- catálogo ---------- */
+  function renderCat(){
+    var q=$("#cat-q").value.trim().toLowerCase();
+    $("#cat-list").innerHTML=st.products.map(function(p,i){return [p,i]}).filter(function(x){return !q||(x[0].code+" "+x[0].name).toLowerCase().indexOf(q)>-1}).map(function(x){var p=x[0];var u=p.vars?Object.keys(p.vars).reduce(function(a,k){return a+(+p.vars[k]||0)},0):p.units;var meta=p.avail&&u>0?(p.vars?Object.keys(p.vars).join(" ")+" · ":"")+u+" unid.":"Agotado";return '<button class="item" data-prod="'+x[1]+'" style="'+(p.avail&&u>0?"":"opacity:.55")+'"><span class="ico" style="width:40px;height:40px;background:var(--row);color:var(--dim);box-shadow:none">▦</span><span class="grow"><span class="code">'+esc(p.code)+'</span> <b>'+esc(p.name)+'</b><br><span class="dim" style="font-size:13px">'+esc(p.cat)+' · '+meta+'</span></span><b>'+soles(p.price)+'</b></button>'}).join("") || '<div class="empty"><span class="ic">▦</span>No encontramos ese producto.</div>';
+  }
+  $("#cat-q").oninput=renderCat;
+  $("#cat-new").onclick=function(){openProd(-1)};
+  $("#cat-list").onclick=function(e){var b=e.target.closest("[data-prod]");if(b)openProd(+b.getAttribute("data-prod"));};
+  function nextCode(){var n=12;while(st.products.some(function(p){return p.code==="B"+n}))n++;return "B"+n;}
+  function openProd(i){
+    editIdx=i; var p=i>-1?st.products[i]:{code:"",name:"",price:"",cat:"General",avail:true,desc:"",units:1};
+    $("#p-title").textContent=i>-1?"Editar producto":"Nuevo producto";
+    $("#p-code").value=p.code; $("#p-code").placeholder=nextCode(); $("#p-name").value=p.name; $("#p-desc").value=p.desc||"";
+    $("#p-price").value=p.price!==""?soles(p.price):""; $("#p-cat").value=p.cat;
+    $("#p-avail").setAttribute("aria-pressed",String(!!p.avail));
+    var hv=!!p.vars; $("#p-var").setAttribute("aria-pressed",String(hv)); $("#p-var-box").hidden=!hv; $("#p-units-f").hidden=hv;
+    $("#p-units").value=p.units||0;
+    var v=p.vars||{S:0,M:0,L:0};
+    $("#p-var-grid").innerHTML=["S","M","L","XL"].map(function(k){return '<label class="field"><span>'+k+'</span><input class="in" data-var="'+k+'" inputmode="numeric" value="'+(v[k]||0)+'"></label>'}).join("");
+    $("#p-err").hidden=true; codeHelp(); openOv("#m-prod");
+  }
+  function codeHelp(){
+    var c=$("#p-code").value.trim().toUpperCase()||$("#p-code").placeholder;
+    var dup=st.products.some(function(p,i){return i!==editIdx&&p.code===c});
+    $("#p-code").classList.toggle("err",dup);
+    $("#p-code-help").className="help"+(dup?" err":"");
+    $("#p-code-help").textContent=dup?c+" ya está en uso. Prueba con "+nextCode()+".":"Tus clientes lo piden así en el live: «quiero "+c+"»";
+    return !dup;
+  }
+  $("#p-code").oninput=function(){this.value=this.value.toUpperCase().replace(/\s/g,"");codeHelp();};
+  $("#p-price").onfocus=function(){this.value=this.value.replace(/[^\d.]/g,"");};
+  $("#p-price").onblur=function(){var n=parseFloat(this.value.replace(/[^\d.]/g,""));this.value=isNaN(n)?"":soles(n);};
+  $$(".toggle").forEach(function(t){ if(t.id!=="pf-wa") t.addEventListener("click",function(){ var on=t.getAttribute("aria-pressed")!=="true"; t.setAttribute("aria-pressed",String(on)); if(t.id==="p-var"){$("#p-var-box").hidden=!on;$("#p-units-f").hidden=on;} }); });
+  $("#f-prod").onsubmit=function(e){e.preventDefault();
+    var code=($("#p-code").value.trim()||$("#p-code").placeholder).toUpperCase(), name=$("#p-name").value.trim(), price=parseFloat($("#p-price").value.replace(/[^\d.]/g,"")), err="";
+    if(!codeHelp()) err="Ese código ya existe.";
+    else if(isNaN(price)||price<=0) err="Escribe el precio en soles, por ejemplo 45.";
+    else if(!name) err="Ponle un nombre al producto.";
+    $("#p-err").textContent=err;$("#p-err").hidden=!err;if(err)return;
+    var p={code:code,name:name,price:price,cat:$("#p-cat").value,avail:$("#p-avail").getAttribute("aria-pressed")==="true",desc:$("#p-desc").value.trim()};
+    if($("#p-var").getAttribute("aria-pressed")==="true"){p.vars={};$$("[data-var]").forEach(function(i){var n=parseInt(i.value,10)||0;if(n)p.vars[i.getAttribute("data-var")]=n;});if(!Object.keys(p.vars).length)p.vars={M:0};}else p.units=parseInt($("#p-units").value,10)||0;
+    if(editIdx>-1)st.products[editIdx]=p;else st.products.unshift(p);
+    save();renderCat();closeAll();toast(editIdx>-1?"Producto actualizado":"Producto guardado · "+code+" a "+soles(price));
+  };
+
+  /* ---------- perfil / plan ---------- */
+  function renderPerfil(){
+    $$(".acc-name").forEach(function(e){e.textContent=st.user});
+    $("#pf-mail").textContent=st.mail;
+    $("#pf-wa").setAttribute("aria-pressed",String(st.wa)); $("#pf-wa-dot").className="dot"+(st.wa?"":" off"); $("#pf-wa-txt").textContent=st.wa?"WhatsApp conectado · +51 9•• ••• 821":"WhatsApp desconectado"; $("#h-wa").className="dot"+(st.wa?"":" off"); $("#h-wa2").className="dot"+(st.wa?"":" off"); $("#h-wa2-t").textContent=st.wa?"WhatsApp":"WhatsApp sin conectar";
+    $("#pf-prev").textContent=$("#pf-msg").value;
+    var end=new Date(2026,9,30+st.days); var ms=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    $("#mon-days").textContent=st.days;
+    $("#pf-days").textContent="Hasta el "+end.getDate()+" "+ms[end.getMonth()]+" · 1 día = un día de lives · Compartido entre tus tiendas";
+    $("#rec-list").innerHTML=st.rec.map(function(r){return '<div><span>'+r[0]+'</span><b>'+r[1]+'</b></div>'}).join("")+'<div><span>Al crear tu cuenta</span><span>7 días gratis</span></div>';
+    renderStores();
+    $("#pf-gift").hidden=!!st.paid;
+    $("#plan-pill").textContent="Monedero · "+st.days+" días";
+    $("#pf-packs").innerHTML=PACKS.map(function(k,i){return '<button class="chip'+(st.pack===i?" on":"")+'" data-pack="'+i+'">'+k.d+' días · S/ '+k.p+'</button>'}).join("");
+    $("#pf-pay").textContent="Pagar S/ "+PACKS[st.pack].p+" por "+PACKS[st.pack].d+" días";
+  }
+  $("#pf-packs").onclick=function(e){var b=e.target.closest("[data-pack]");if(!b)return;st.pack=+b.getAttribute("data-pack");renderPerfil();};
+  $("#pf-msg").oninput=function(){$("#pf-prev").textContent=this.value;};
+  $("#pf-wa").onclick=function(){if(!st.wa){openOv("#m-wa");return;}st.wa=false;save();renderPerfil();toast("WhatsApp desconectado");};
+  $("#wa-done").onclick=function(){st.wa=true;save();closeAll();renderPerfil();toast("WhatsApp conectado");};
+  $("#pf-pay").onclick=function(){$("#pay-amt").textContent=PACKS[st.pack].d+" días · S/ "+PACKS[st.pack].p;setPay("yape");openOv("#m-pay");};
+  function setPay(m){payM=m;$$("#pay-method .chip").forEach(function(c){c.classList.toggle("on",c.getAttribute("data-m")===m)});$("#pay-qr").hidden=m==="tarjeta";$("#pay-card").hidden=m!=="tarjeta";$("#pay-app").textContent=m==="plin"?"Plin":"Yape";$("#pay-ok").textContent=m==="tarjeta"?"Pagar S/ "+PACKS[st.pack].p:"Ya pagué";}
+  $("#pay-method").onclick=function(e){var b=e.target.closest("[data-m]");if(b)setPay(b.getAttribute("data-m"));};
+  $("#pay-ok").onclick=function(){var b=this;b.disabled=true;b.textContent="Confirmando pago…";setTimeout(function(){b.disabled=false;st.days+=PACKS[st.pack].d;st.paid=true;st.rec.unshift(["30 oct. 2026","+"+PACKS[st.pack].d+" días · S/ "+PACKS[st.pack].p]);save();closeAll();renderPerfil();toast("Pago aprobado. Sumamos "+PACKS[st.pack].d+" días a tu plan");},1300);};
+
+  function render(){
+    if (!st.lives) st.lives=[];
+    if (view==="ob-etiquetas") renderOb();
+    if (view==="live") renderLive();
+    if (view==="rescatar") renderRes();
+    if (view==="historial") renderHis();
+    if (view==="etiquetas") renderTags();
+    if (view==="catalogo") renderCat();
+    renderPerfil(); renderRes();
+    $("#v-mail").textContent = st.mail;
+  }
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeAll();});
+
+  var start = (window.LL_START) || "login";
+  go(start, location.hash ? location.hash.slice(1) : null);
+})();
+</script>
+</html>

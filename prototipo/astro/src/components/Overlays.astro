@@ -1,0 +1,121 @@
+---
+---
+<div class="scrim" id="scrim" hidden></div>
+
+<aside class="drawer" id="drawer" hidden aria-label="Mensajes de la persona">
+  <div class="row"><i class="pdot" id="d-dot" style="grid-row:auto"></i><b id="d-name" class="p-name"></b><span class="p-meta" id="d-count"></span><button class="x" data-close aria-label="Cerrar">✕</button></div>
+  <div class="bubbles" id="d-tl"></div>
+  <label class="field"><span>Etiqueta</span><select class="in" id="d-sel"></select><span class="help">Si la IA se equivocó, cámbiala y aprende.</span></label>
+  <div class="card slim" id="d-wa-box" style="background:var(--row)">
+    <h3>¿Te dio su número?</h3>
+    <div class="row"><span class="in mono" style="width:auto">+51</span><input class="in" id="d-num" inputmode="numeric" maxlength="9" placeholder="9 dígitos"></div>
+    <button class="btn soft" id="d-wa">Guardar y pasar a WhatsApp</button>
+  </div>
+  <div class="card slim" id="d-wa-off" hidden style="background:var(--row)"><h3>¿Te dio su número?</h3><span class="help">Conecta tu WhatsApp para guardarlo y conversar desde LiveLeads.</span><button class="btn soft" data-go="perfil">Ir a Perfil</button></div>
+  <span class="help">Se abre TikTok y le escribes tú. LiveLeads no envía mensajes por ti.</span>
+  <button class="pill dm" id="d-open" style="padding:12px"></button>
+  <button class="link" id="d-done" style="align-self:center"></button>
+</aside>
+
+<div class="modal" id="m-prod" hidden>
+  <form class="card top" id="f-prod" novalidate>
+    <div class="row"><h2 id="p-title">Nuevo producto</h2><button class="x" type="button" data-close>✕</button></div>
+    <div class="photo"><span class="empty-ic" style="font-size:24px">⊕</span><span style="font-size:13px">Foto (opcional)</span><div class="row"><button class="btn soft sm" type="button" data-toast="Elige una foto de tu galería">Subir foto</button><button class="btn sm" type="button" style="background:#24121b;color:var(--red-ink);border:1px solid #4a1d2e" data-toast="Elige un momento de tu último live">◉ Elegir de mi live</button></div></div>
+    <div class="two">
+      <label class="field"><span>Código *</span><input class="in mono" id="p-code" placeholder="B12" maxlength="6"></label>
+      <label class="field"><span>Precio *</span><input class="in" id="p-price" inputmode="decimal" placeholder="S/ 0.00"></label>
+    </div>
+    <span class="help" id="p-code-help">Tus clientes lo piden así en el live: «quiero B12»</span>
+    <label class="field"><span>Nombre *</span><input class="in" id="p-name" placeholder="Blusa de lino"></label>
+    <div class="two">
+      <label class="field"><span>Categoría</span><select class="in" id="p-cat"><option>General</option><option>Blusas</option><option>Casacas</option><option>Accesorios</option></select></label>
+      <div class="field"><span>&nbsp;</span><button class="toggle toggle-field" type="button" id="p-avail" aria-pressed="true"><i></i>Disponible</button></div>
+    </div>
+    <label class="field"><span>Descripción</span><input class="in" id="p-desc" placeholder="Manga corta, tela fresca"></label>
+    <div class="card slim" style="background:var(--row)">
+      <button class="toggle" type="button" id="p-var" aria-pressed="false"><i></i>Tiene colores o tallas</button>
+      <label class="field" id="p-units-f"><span>Unidades disponibles</span><input class="in" id="p-units" inputmode="numeric" value="1" style="width:140px"></label>
+      <div id="p-var-box" hidden><span class="help">Unidades por talla</span><div class="var-grid" id="p-var-grid"></div></div>
+    </div>
+    <span class="help err" id="p-err" hidden></span>
+    <div class="row form-actions"><button class="link" type="button" data-close>Cancelar</button><button class="btn" type="submit">Guardar producto</button></div>
+  </form>
+</div>
+
+<div class="modal" id="m-pay" hidden>
+  <div class="card top narrow">
+    <div class="row"><h2>Recargar <span id="pay-amt">S/ 20</span></h2><button class="x" data-close>✕</button></div>
+    <div class="chips" id="pay-method"><button class="chip on" data-m="yape">Yape</button><button class="chip" data-m="plin">Plin</button><button class="chip" data-m="tarjeta">Tarjeta</button></div>
+    <div id="pay-qr">
+      <div class="qr"><svg width="160" height="160" viewBox="0 0 21 21" aria-label="Código QR de ejemplo"><path fill="#0b0f1a" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zm1 1v5h5V1zm1 1h3v3h-3zM0 14h7v7H0zm1 1v5h5v-5zm1 1h3v3H2zM9 0h2v2H9zM8 3h3v2H8zM12 8h2v2h-2zM8 8h3v3H8zM15 9h3v2h-3zM9 13h2v3H9zM13 13h3v2h-3zM17 14h3v3h-3zM12 17h3v3h-3zM18 19h2v2h-2zM9 18h2v2H9z"/></svg></div>
+      <p class="muted" style="text-align:center;margin:8px 0 0">Escanea con <b id="pay-app">Yape</b> desde tu celular. En el celular se abre la app con el monto ya cargado.</p>
+    </div>
+    <div id="pay-card" hidden style="display:flex;flex-direction:column;gap:10px">
+      <label class="field"><span>Número de tarjeta</span><input class="in mono" placeholder="4111 1111 1111 1111"></label>
+      <div class="two"><label class="field"><span>Vence</span><input class="in mono" placeholder="MM/AA"></label><label class="field"><span>CVV</span><input class="in mono" placeholder="123"></label></div>
+      <span class="help">Prototipo: no ingreses datos reales.</span>
+    </div>
+    <label class="field"><span>Comprobante</span><div class="row"><select class="in" style="width:auto"><option>Boleta · DNI</option><option>Factura · RUC</option></select><input class="in" placeholder="Número"></div></label>
+    <button class="btn block" id="pay-ok">Ya pagué</button>
+  </div>
+</div>
+
+<div class="modal" id="m-wa" hidden>
+  <div class="card top narrow">
+    <div class="row"><h2>Conecta tu WhatsApp</h2><button class="x" data-close>✕</button></div>
+    <div class="qr"><svg width="160" height="160" viewBox="0 0 21 21" aria-label="Código QR de ejemplo"><path fill="#0b0f1a" d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2zM14 0h7v7h-7zm1 1v5h5V1zm1 1h3v3h-3zM0 14h7v7H0zm1 1v5h5v-5zm1 1h3v3H2zM9 0h2v2H9zM8 3h3v2H8zM12 8h2v2h-2zM8 8h3v3H8zM15 9h3v2h-3zM9 13h2v3H9zM13 13h3v2h-3zM17 14h3v3h-3zM12 17h3v3h-3zM18 19h2v2h-2zM9 18h2v2H9z"/></svg></div>
+    <span class="help" style="text-align:center">En tu celular abre WhatsApp, entra a Dispositivos vinculados y escanea este código.</span>
+    <button class="btn block" id="wa-done">Ya lo escaneé</button>
+  </div>
+</div>
+
+<div class="modal" id="m-store" hidden>
+  <div class="card top narrow">
+    <div class="row"><h2>Agregar tienda</h2><button class="x" data-close aria-label="Cerrar">✕</button></div>
+    <div class="steps"><i class="on" id="ss-1"></i><i id="ss-2"></i><i id="ss-3"></i></div>
+    <div id="sa-1" style="display:flex;flex-direction:column;gap:12px">
+      <label class="field"><span>@ de TikTok de la tienda</span><input class="in" id="sa-u" placeholder="@mitienda"></label>
+      <span class="help err" id="sa-err" hidden></span>
+      <button class="btn block" id="sa-next1">Buscar cuenta</button>
+    </div>
+    <div id="sa-2" hidden style="display:flex;flex-direction:column;gap:12px">
+      <h3>¿Es esta cuenta?</h3>
+      <div class="store-row"><span class="ico" style="width:40px;height:40px;background:#3a1626;color:var(--red-ink);box-shadow:none">♪</span><b class="grow" id="sa-found"></b></div>
+      <button class="btn block" id="sa-next2">Sí, es esta</button>
+      <button class="link" id="sa-back" style="align-self:center">Volver</button>
+    </div>
+    <div id="sa-3" hidden style="display:flex;flex-direction:column;gap:10px">
+      <h3>Elige sus etiquetas</h3>
+      <button class="btn block" data-sa="copy">Copiar las de mi tienda actual</button>
+      <button class="btn soft block" data-sa="reco">Usar las recomendadas</button>
+      <span class="help">WhatsApp es opcional. Lo conectas después desde Perfil.</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="m-end" hidden>
+  <div class="card top narrow">
+    <h2>¿Terminar tu live?</h2>
+    <p class="muted" style="margin:0">Dejamos de leer comentarios. Todo lo que ya capturamos queda guardado.</p>
+    <button class="btn block" id="end-ok">Terminar live</button>
+    <button class="link" data-close style="align-self:center">Seguir en vivo</button>
+  </div>
+</div>
+
+<div class="modal" id="m-sum" hidden>
+  <div class="card top narrow" style="align-items:center;text-align:center">
+    <div class="ll big">LL</div>
+    <h2>Tu live terminó</h2>
+    <div class="sum-stats"><div class="stat"><b id="sum-c">0</b><span>comentarios</span></div><div class="stat"><b id="sum-b">0</b><span>con intención de compra</span></div></div>
+    <div class="sum-tags" id="sum-tags"></div>
+    <p class="muted" style="margin:0" id="sum-txt"></p>
+    <button class="btn block" data-go="rescatar">Ver a quién escribir</button>
+    <button class="link" data-go="historial">Ver historial</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<nav class="demo-bar" aria-label="Atajos del prototipo">
+  <button data-go="login">Login</button><button data-go="registro">Registro</button><button data-go="ob-etiquetas">Onboarding</button><button data-go="live">Panel</button><button id="demo-sim">Conexión: normal</button>
+</nav>

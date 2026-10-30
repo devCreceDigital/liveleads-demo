@@ -1,0 +1,37 @@
+---
+---
+    <div class="page" data-view="perfil">
+      <div class="card slim"><div class="row"><span class="ico" style="width:44px;height:44px;background:#3a1626;color:var(--red-ink);box-shadow:none">♪</span><span class="grow"><b class="acc-name">@tutienda</b><br><span class="dim" style="font-size:13px" id="pf-mail">tienda@correo.com</span></span><button class="btn soft sm" data-toast="Te escribimos por WhatsApp para cambiar tu @">Cambiar @</button></div></div>
+      <div class="card slim" id="tiendas">
+        <div class="row"><h3 class="grow">Mis tiendas</h3><span class="mono-note" id="st-count"></span></div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="st-list"></div>
+        <button class="btn soft" id="st-add">+ Agregar tienda</button>
+        <span class="help" id="st-help"></span>
+      </div>
+      <div class="card slim">
+        <h3>Conexiones de <span class="acc-name"></span></h3>
+        <div class="row"><span class="dot"></span><span class="grow">TikTok conectado</span></div>
+        <div class="row"><span class="dot" id="pf-wa-dot"></span><span class="grow" id="pf-wa-txt">WhatsApp conectado · +51 9•• ••• 821</span><button class="toggle" id="pf-wa" aria-pressed="true"><i></i></button></div>
+        <details>
+          <summary class="muted" style="cursor:pointer">Mensaje automático para pedir el @</summary>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+            <span class="help">Cuando un número que no conocemos te escribe durante el live (o hasta 12 h después), le llega este mensaje. Cuando nos da su @, lo unimos con sus comentarios.</span>
+            <textarea class="in" id="pf-msg" rows="3">¡Hola! 👋 Gracias por escribirnos. ¿Nos compartes tu usuario de TikTok para ayudarte con lo que viste en el live?</textarea>
+            <div class="example"><span class="dim" style="font-size:12px">ASÍ LE LLEGA</span><span id="pf-prev"></span></div>
+            <button class="btn sm" style="align-self:flex-start" data-toast="Mensaje guardado">Guardar mensaje</button>
+          </div>
+        </details>
+      </div>
+      <div class="card slim" id="plan">
+        <h3>Monedero</h3>
+        <div class="mon-bal"><b id="mon-days">7</b><span class="muted">días disponibles</span></div>
+        <span class="help" id="pf-days">Hasta el 6 nov · 1 día = un día de lives · Compartido entre tus tiendas</span>
+        <div class="chips" id="pf-packs"></div>
+        <div class="gift" id="pf-gift"><span>🎁</span><span>Estás en tus <b>7 días gratis</b>. Puedes usar todo sin poner tarjeta.</span></div>
+        <span class="help">Elige cuántos días quieres agregar:</span>
+        <button class="btn block" id="pf-pay">Pagar S/ 20</button>
+        <span class="help">Cada día cuesta S/ 1.33 en todos los paquetes. Pagas solo cuando recargas. Si aún te quedan días, los nuevos se suman al final.</span>
+        <div class="row" style="justify-content:center"><span class="dim" style="font-size:13px">Yape · Plin · Tarjeta · procesado por Culqi</span></div>
+        <h3>Tus recargas</h3><div class="rec-list" id="rec-list"></div>
+      </div>
+    </div>

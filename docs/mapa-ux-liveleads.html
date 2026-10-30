@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapa UX de LiveLeads</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: reading column with full-width wireframe boards; issues pinned onto boards by number */
+:root{
+  --bg:#f6f4f7; --paper:#ffffff; --ink:#1b1620; --muted:#6a6170; --line:#e3dde6;
+  --accent:#e0246a; --accent-soft:#fde6ef; --wire:#ece8ef; --wire-2:#d9d3de; --wire-ink:#8a8090;
+  --ok:#1f8a5b; --warn:#b26b00; --bad:#c2253a;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121016; --paper:#1a171f; --ink:#f1edf3; --muted:#a79daf; --line:#2c2733;
+  --accent:#ff4d8d; --accent-soft:#3a1828; --wire:#24202a; --wire-2:#332d3b; --wire-ink:#8f859a;
+  --ok:#4cc38a; --warn:#e3a33b; --bad:#ff6b7d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121016; --paper:#1a171f; --ink:#f1edf3; --muted:#a79daf; --line:#2c2733;
+  --accent:#ff4d8d; --accent-soft:#3a1828; --wire:#24202a; --wire-2:#332d3b; --wire-ink:#8f859a;
+  --ok:#4cc38a; --warn:#e3a33b; --bad:#ff6b7d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body);margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.1;margin:0}
+h1{font-size:clamp(34px,5vw,54px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(24px,3vw,32px);font-weight:800}
+h3{font-size:19px;font-weight:600}
+p{margin:0;max-width:68ch}
+.eyebrow{font:600 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:18px;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:20px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font:400 13px/1.4 var(--f-mono);color:var(--muted)}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.sev{display:inline-flex;align-items:center;gap:6px;font:600 12px/1 var(--f-mono);padding:5px 9px;border-radius:99px;width:fit-content}
+.sev.alta{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.sev.media{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.sev.baja{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.issues{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.issues li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.issues li>div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.pin{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font:700 12px/1 var(--f-mono);flex:none}
+.fix{color:var(--muted);font-size:15px}
+.fix b{color:var(--ink);font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:15px}
+.tbl{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td code,p code{font:400 13px/1 var(--f-mono);background:var(--wire);padding:2px 6px;border-radius:6px}
+pre.mermaid{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto;margin:0}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 14px;color:var(--muted)}
+@media (max-width:640px){.screen{grid-template-columns:1fr}.side{flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1.5px solid var(--wire-2)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* minimalist mockups: fixed Live Leads app look, independent of page theme */
+.mm-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.mm{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.mm figcaption{font-size:14px;color:var(--muted)}
+.mm figcaption b{color:var(--ink)}
+.mm-top,.mm-body{background:#0b0f1a;color:rgba(255,255,255,.9);font:500 13px/1.4 Inter,system-ui,sans-serif}
+.mm-top{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,.08);border-bottom-color:#161c2b}
+.mm-top b{font-weight:700;font-size:14px}
+.mm-burger{width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.08);display:inline-flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4)}
+.mm-live{margin-left:auto;font:600 11px/1 "JetBrains Mono",monospace;color:#ff4d6d}
+.mm-body{border:1px solid rgba(255,255,255,.08);border-top:0;border-radius:0 0 14px 14px;padding:16px;min-height:330px;display:flex;flex-direction:column;gap:10px}
+.mm-card{background:#10141f;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.mm-card:not(.slim)::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#fe2c55,#25f4ee)}
+.mm-card.slim{padding:12px 14px;gap:6px}
+.mm-ico{width:38px;height:38px;border-radius:11px;background:#fe2c55;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 6px 18px rgba(238,45,85,.35)}
+.mm-ico.ghost{background:#161c2b;color:rgba(255,255,255,.4);box-shadow:none}
+.mm-h{font-size:16px;font-weight:700}
+.mm-p{color:rgba(255,255,255,.5);font-size:12.5px}
+.center{text-align:center}
+.mm-acc{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 11px}
+.mm-acc small{color:rgba(255,255,255,.4)}
+.mm-dot{width:28px;height:28px;border-radius:8px;background:#3a1626;color:#ff4d6d;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.mm-link{margin-left:auto;color:rgba(255,255,255,.4);font-size:11px}
+.mm-btn{background:#fe2c55;color:#fff;text-align:center;border-radius:11px;padding:10px;font-weight:700}
+.mm-health{display:flex;gap:6px;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.4)}
+.mm-health i,.mm-line i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.mm i.g{background:#3ddc84}.mm i.y{background:#f4c430}
+.mm-foot{color:rgba(255,255,255,.4);font-size:11px;text-align:center;margin-top:auto}
+.mm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mm-stats span{background:#10141f;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px;display:flex;flex-direction:column}
+.mm-stats b{font-size:18px}
+.mm-stats small,.mm-row small{color:rgba(255,255,255,.4);font-size:10.5px}
+.mm-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mm-chips span{border:1px solid rgba(255,255,255,.08);border-radius:99px;padding:4px 10px;font-size:11.5px;color:rgba(255,255,255,.5)}
+.mm-chips span.on{background:rgba(255,255,255,.9);color:#0b0f1a;border-color:rgba(255,255,255,.9)}
+.mm-row{display:flex;gap:9px;align-items:flex-start;background:#10141f;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 11px;font-size:12.5px}
+.mm-row>span:first-of-type{flex:1;min-width:0}
+.mm-row.done{opacity:.75}
+.mm-row>i,.mm-example>i{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:none;display:inline-block}
+.mm i.c{background:#f2597a}.mm i.n{background:#f4c430}.mm i.i{background:#3ddc84}.mm i.w{background:#25f4ee}
+.mm em{font-style:normal;font:700 10px/1 Inter,sans-serif;padding:3px 6px;border-radius:5px;margin-right:4px}
+.tc{background:rgba(242,89,122,.15);color:#f2597a}.tn{background:rgba(244,196,48,.15);color:#f4c430}.ti{background:rgba(61,220,132,.15);color:#3ddc84}.tw{background:rgba(63,217,216,.15);color:#25f4ee}
+.mm-mini{border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:4px 9px;font-size:11px;color:rgba(255,255,255,.9);white-space:nowrap;flex:none}
+.mm-ghost{align-self:flex-end;color:#f4c430;font-size:12px;margin-top:auto}
+.mm-sub{color:rgba(255,255,255,.4);font-size:11.5px}
+.mm-example{background:#10141f;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:9px 12px;font-size:12.5px}
+.mm-input{display:flex;gap:8px;align-items:center;border:1px solid #6b2340;border-radius:11px;padding:7px 8px 7px 12px;color:rgba(255,255,255,.4);font-size:12px}
+.mm-input>span:first-child{flex:1}
+.mm-empty{text-align:center;color:rgba(255,255,255,.4);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:auto}
+.mm-empty small{color:rgba(255,255,255,.4)}
+.mm-funnel{display:flex;flex-direction:column;gap:6px}
+.mm-funnel>span{position:relative;display:flex;justify-content:space-between;font-size:12px;padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.05);overflow:hidden}
+.mm-funnel>span::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:linear-gradient(90deg,rgba(238,77,111,.35),rgba(63,217,216,.35))}
+.mm-funnel>span>*{position:relative}
+.mm-line{display:flex;align-items:center;gap:7px;font-size:12.5px}
+.mm-menu{display:grid;grid-template-columns:minmax(0,220px) 1fr;gap:18px;align-items:start}
+.mm-side{background:#0b0f1a;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:4px;font:500 13px/1.3 Inter,sans-serif;min-height:330px}
+.mm-side span{padding:8px 10px;border-radius:10px}
+.mm-side span.on{background:#1a2133;color:rgba(255,255,255,.9)}
+.mm-plan{margin-top:auto;border:1px solid rgba(255,255,255,.08);color:#25f4ee;font-size:12px}
+.mm-out{color:rgba(255,255,255,.4)}
+.mm-cat{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));align-items:start}
+.mm-prod{display:flex;align-items:center;gap:10px;background:#10141f;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 11px;font-size:12.5px}
+.mm-prod>span:nth-child(2){flex:1;min-width:0}
+.mm-prod small{color:rgba(255,255,255,.4)}
+.mm-prod.off{opacity:.55}
+.mm-thumb{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.4);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.mm-code{font:700 11px/1 "JetBrains Mono",monospace;color:#ff4d6d;background:rgba(255,77,109,.12);padding:3px 6px;border-radius:5px;margin-right:4px}
+.mm-form{gap:12px}
+.mm-photo{border:1px dashed rgba(255,255,255,.1);border-radius:14px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.4)}
+.mm-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+.mm-f{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:rgba(255,255,255,.5);min-width:0}
+.mm-in{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 11px;color:rgba(255,255,255,.9);font-size:13px}
+.mm-in.muted{color:rgba(255,255,255,.4)}
+.mm-step{width:fit-content;letter-spacing:.05em}
+.mm-hint{font-size:11.5px;color:rgba(255,255,255,.4);margin-top:-4px}
+.mm-hint b{color:rgba(255,255,255,.9)}
+.mm-toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;padding-bottom:8px}
+.mm-toggle i{width:30px;height:17px;border-radius:99px;background:#fe2c55;position:relative;flex:none}
+.mm-toggle i::after{content:"";position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:#fff}
+.mm-toggle.off i{background:rgba(255,255,255,.1)}
+.mm-toggle.off i::after{right:auto;left:2px}
+.mm-var{background:#0f1424;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.mm-actions{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-top:4px}
+.mm-actions .mm-btn{padding:9px 16px}
+.mm-mini.pink{color:#ff4d6d;border-color:#4a1d2e;background:#24121b}
+@media (max-width:640px){.mm-menu{grid-template-columns:1fr}}
+.guide{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px;max-width:72ch}
+.guide li::marker{color:var(--accent);font-weight:700}
+.plain{margin:0;padding-left:20px;max-width:72ch;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+.plain b{color:var(--ink)}
+.mm-gift{background:rgba(63,217,216,.1);border:1px solid rgba(63,217,216,.35);border-radius:10px;padding:8px 10px;font-size:12.5px}
+.mm-side b{margin-left:6px}
+.mm-side{min-height:300px}
+.mm-seg{display:grid;grid-template-columns:1fr 1fr;background:rgba(255,255,255,.05);border-radius:9px;padding:3px;font-size:12px;text-align:center}
+.mm-seg span{padding:5px;border-radius:7px;color:rgba(255,255,255,.5)}
+.mm-seg .on{background:#10141f;color:#fff;font-weight:700}
+.mm-bar{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;text-align:center}
+.mp{display:grid;grid-template-columns:8px minmax(0,1fr);gap:4px 10px;align-items:start;padding:6px 2px;font-size:12px}
+.mp>i{width:8px;height:8px;border-radius:50%;margin-top:4px}
+.mp b{font-size:13px;font-weight:600}.mp small{font-size:10.5px;font-family:"JetBrains Mono",monospace}
+.mp em{font-size:11.5px;color:rgba(255,255,255,.4)}
+.mp-a{grid-column:2;display:grid;grid-template-columns:1fr 1.4fr;gap:5px}
+.mm-pill{text-align:center;border:.8px solid rgba(255,255,255,.08);border-radius:10px;padding:6px 8px;font-size:11px;font-weight:500;color:rgba(255,255,255,.4);white-space:nowrap}
+.mm-pill.dm{background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.145);color:#4ade80}
+.mm-bubble{display:flex;justify-content:space-between;gap:8px;background:rgba(255,255,255,.05);border-radius:13px;padding:8px 11px;font-size:12.5px}
+.mm-xn{font:700 10.5px/1.4 "JetBrains Mono",monospace;background:rgba(255,255,255,.1);padding:1px 6px;border-radius:99px}
+.mm-sess{border:.8px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);border-radius:16px;padding:9px 10px;display:flex;flex-direction:column;gap:7px}
+.mm-sess-h{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:12.5px}
+.mm-sess-h>i{width:8px;height:8px;border-radius:50%;background:#4ade80}
+.mm-sess-h small{color:rgba(255,255,255,.4);font-size:10.5px}
+.mm-ok{font-size:9.5px;color:#4ade80;background:rgba(74,222,128,.082);padding:1px 5px;border-radius:99px}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:14px">
+  <span class="eyebrow">Guía de producto · tiktoklive.me/app/admin</span>
+  <h1>Mapa UX de LiveLeads</h1>
+  <p class="lede">La guía de cómo funciona LiveLeads para un vendedor de lives: qué pantallas tiene, qué camino sigue cada persona, qué hace el sistema por detrás y con qué palabras se lo explicamos. Refleja el prototipo tal como está implementado.</p>
+  <div class="meta"><span>Actualizado: 30 oct 2026</span><span>Primero para celular</span><span>Perú · soles</span><span>11 pantallas</span><a href="https://claude.ai/artifact/J3VmmaG43zqLW1iW99F1D3" style="color:var(--accent)">Abrir el prototipo</a></div>
+</header>
+
+<section>
+  <span class="eyebrow">En una frase</span>
+  <h2>Lo que hace LiveLeads</h2>
+  <p>Mientras haces tu live, LiveLeads lee los comentarios y los ordena por intención. Al terminar, te muestra a quién escribirle primero. Le escribes tú.</p>
+  <div class="grid">
+    <div class="card"><h3>Antes del live</h3><p class="fix">Creas tus etiquetas y cargas tu catálogo con códigos.</p></div>
+    <div class="card"><h3>Durante el live</h3><p class="fix">Presionas Iniciar live y ves en orden quién quiere comprar y quién insiste.</p></div>
+    <div class="card"><h3>Después del live</h3><p class="fix">Abres Por rescatar y le escribes a cada persona, empezando por las más interesadas.</p></div>
+  </div>
+</section>
+
+<section id="guia">
+  <span class="eyebrow">Guía para el usuario</span>
+  <h2>Cómo empezar, paso a paso</h2>
+  <p>Este es el texto que explica el producto a un vendedor nuevo. Se puede usar tal cual en la ayuda, en el correo de bienvenida o en un tutorial.</p>
+  <ol class="guide">
+    <li><b>Crea tu cuenta.</b> Escribe tu @ de TikTok, tu correo y una contraseña. Tienes 7 días gratis y no necesitas tarjeta.</li>
+    <li><b>Confirma tu correo.</b> Te enviamos un código de 6 dígitos. Lo pedimos una sola vez, para que el día de tu live nada te frene.</li>
+    <li><b>Crea tus etiquetas.</b> Son los grupos donde ordenamos a quienes comentan. Toca "Usar las recomendadas" y listo: Quiere comprar, Pregunta precio, Pregunta talla y Envío.</li>
+    <li><b>Haz tu live.</b> Abre tu live en TikTok, como siempre. Luego vuelve a LiveLeads y presiona "Iniciar live".</li>
+    <li><b>Vende tranquilo.</b> En "Por atender" ves a cada persona que quiere comprar, ordenada por interés. 🔥 marca a quien insiste. Si no sabes qué decir, toca "¿Qué digo ahora?".</li>
+    <li><b>Rescata tus ventas.</b> Al terminar ves un resumen de tu live. Toca "Ver a quién escribir", abre a cada persona y toca "Escribirle al DM". Se abre TikTok y le escribes tú.</li>
+    <li><b>Sigue por WhatsApp si quieres.</b> Conecta tu WhatsApp en Perfil. Cuando alguien te dé su número, guárdalo y sigue la conversación ahí.</li>
+  </ol>
+</section>
+
+<section>
+  <span class="eyebrow">Arquitectura de información</span>
+  <h2>Mapa del sitio</h2>
+  <p>Seis secciones en un menú plegable. Cada pantalla resuelve una sola tarea. El Monedero vive al pie del menú y el selector de tienda está siempre arriba.</p>
+<pre class="mermaid">
+flowchart LR
+  L[Login] --> A
+  RG[Crear cuenta] --> V[Confirmar correo] --> O1[Paso 1<br/>Etiquetas] --> O2[Paso 2<br/>Primer live] --> A[Panel]
+  A --> LV[Live]
+  A --> PR[Por rescatar]
+  A --> H[Historial]
+  A --> E[Etiquetas]
+  A --> C[Catálogo]
+  A --> P[Perfil]
+  PR --> PD[Detalle de persona]
+  C --> CF[Formulario de producto]
+  P --> PT[Mis tiendas<br/>hasta 3]
+  P --> PW[Conectar WhatsApp]
+  P --> PP[Monedero]
+</pre>
+  <div class="tbl"><table>
+    <thead><tr><th>Sección</th><th>Para qué sirve</th><th>Qué encuentras</th><th>Cuándo se usa</th></tr></thead>
+    <tbody>
+      <tr><td><b>Live</b></td><td>Conectar tu live y seguir los comentarios</td><td>Iniciar live · estado de TikTok, IA y WhatsApp · contadores · Por atender y Todo el chat · filtro por etiqueta · 🔥 insiste · 🆕 nuevo · lupa · ¿Qué digo ahora? · Terminar live</td><td>Durante el live</td></tr>
+      <tr><td><b>Por rescatar</b></td><td>Saber a quién escribirle primero</td><td>Personas del último live · buscador · filtros por estado y etiqueta · mensajes agrupados · Escribirle al DM · cambiar etiqueta · pasar a WhatsApp · Excel</td><td>Después del live</td></tr>
+      <tr><td><b>Historial</b></td><td>Analizar tus lives y volver a cualquiera</td><td>Buscador · 24 h, 7 y 30 días · estadísticas que filtran · etiquetas · filtros de estado, interés y orden · sesiones desplegables · mensajes · Escribirle al DM · PDF</td><td>Entre lives</td></tr>
+      <tr><td><b>Etiquetas</b></td><td>Decidir cómo se ordena tu chat</td><td>Ejemplo · agregar etiqueta · sugeridas · descripción de cada una</td><td>Antes del live</td></tr>
+      <tr><td><b>Catálogo</b></td><td>Tener tus productos con código</td><td>Lista con código, precio y stock · buscador · formulario · Excel</td><td>Antes del live</td></tr>
+      <tr><td><b>Perfil</b></td><td>Cuenta, tiendas, conexiones y Monedero</td><td>Mis tiendas (hasta 3) · agregar y cambiar de tienda · conectar WhatsApp · mensaje automático · Monedero · recarga · historial de recargas</td><td>De vez en cuando</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Por rescatar e Historial</h3>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>Por rescatar</th><th>Historial</th></tr></thead>
+    <tbody>
+      <tr><td><b>Pregunta que responde</b></td><td>¿A quién le escribo ahora?</td><td>¿Cómo me fue y qué pasó en cada live?</td></tr>
+      <tr><td><b>Alcance</b></td><td>Solo el último live</td><td>Todos los lives, por periodo</td></tr>
+      <tr><td><b>Lo que agrega</b></td><td>Lista simple para actuar</td><td>Estadísticas, filtros y sesiones desplegables</td></tr>
+      <tr><td><b>Lo que comparten</b></td><td colspan="2">La misma fila de persona, mensajes y Escribirle al DM</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <span class="eyebrow">Flujos de usuario</span>
+  <h2>El camino del vendedor</h2>
+  <h3>1 · Primer uso</h3>
+  <p>El correo se confirma al registrarse, así el botón Iniciar live nunca aparece bloqueado.</p>
+<pre class="mermaid">
+flowchart TD
+  A[Crear cuenta<br/>7 días gratis, sin tarjeta] --> B[Confirmar correo<br/>código de 6 dígitos]
+  B --> C[Paso 1: Crea tus etiquetas]
+  C -->|Usar las recomendadas| D[4 etiquetas listas]
+  C -->|Lo hago después| E
+  D --> E[Paso 2: Así haces tu primer live]
+  E -->|Empezar| F[Live]
+</pre>
+  <h3>2 · Durante el live</h3>
+  <p>Una sola pantalla con dos vistas. En el celular se cambia entre ellas; en escritorio se ven lado a lado.</p>
+<pre class="mermaid">
+flowchart TD
+  A[Abrir live en TikTok] --> B[Iniciar live]
+  B --> C[Buscando el live de @tutienda]
+  C -->|Lo encuentra| D[Por atender]
+  C -->|No hay live| E[Aún no vemos tu live<br/>Reintentar]
+  C -->|Falla la conexión| F[Tu live está activo, pero no logramos conectarnos<br/>Reintentar]
+  E --> C
+  F --> C
+  D --> G[Una fila por persona<br/>por etiqueta e insistencia]
+  G --> H[Atender]
+  D --> I[Todo el chat]
+  D --> J[¿Qué digo ahora?]
+  D --> K[Terminar live]
+  K --> L[Confirmar]
+</pre>
+  <h3>3 · Después del live</h3>
+  <p>Al terminar, el vendedor va directo a la lista del último live. Para volver a un live anterior usa Historial, que lleva por el mismo camino: sesión, personas, mensajes y DM.</p>
+<pre class="mermaid">
+flowchart TD
+  A[Resumen del live<br/>comentarios y personas por etiqueta] -->|Ver a quién escribir| B[Por rescatar<br/>primero quienes quieren comprar]
+  A -->|Ver historial| H[Historial<br/>sesión desplegable]
+  H --> C
+  H --> E
+  B --> C[33 mensajes<br/>ventana con mensajes agrupados ×3 ×19]
+  B --> E
+  C -->|La IA se equivocó| D[Cambiar etiqueta]
+  C --> E[Escribirle al DM]
+  E --> F[Se abre TikTok y le escribes tú]
+  F --> G[Queda como Escrito]
+  C --> W{¿Te dio su número?}
+  W -->|Sí, WhatsApp conectado| I[Guardar y pasar a WhatsApp]
+  W -->|Sí, sin WhatsApp| J[Ir a Perfil y conectar]
+</pre>
+  <h3>4 · Conectar WhatsApp (opcional)</h3>
+<pre class="mermaid">
+flowchart LR
+  A[Perfil · Conexiones] --> B[Activar WhatsApp]
+  B --> C[Escanear código QR]
+  C --> D[Ya lo escaneé]
+  D --> E[WhatsApp conectado]
+  E --> F[Editar mensaje automático]
+</pre>
+  <h3>5 · Recargar el Monedero</h3>
+<pre class="mermaid">
+flowchart LR
+  A[Perfil · Monedero] --> B[Elegir 15, 30 o 60 días]
+  B --> C[Pagar con Yape, Plin o tarjeta]
+  C --> D[Elegir boleta o factura]
+  D --> E[Pago aprobado]
+  E --> F[Los días se suman al Monedero]
+</pre>
+  <h3>6 · Agregar una tienda</h3>
+  <p>El plan es por cuenta: no se cobra por tienda. El límite es de 3 tiendas y no se vuelve a pedir el correo.</p>
+<pre class="mermaid">
+flowchart LR
+  A[Perfil · Mis tiendas] --> B[+ Agregar tienda]
+  B --> C[Escribir el @]
+  C --> D[¿Es esta cuenta?]
+  D --> E[Copiar etiquetas o usar recomendadas]
+  E --> F[Tienda agregada]
+  F --> G[Cambiar desde el selector de arriba]
+</pre>
+</section>
+
+<section>
+  <span class="eyebrow">Flujo de sistema</span>
+  <h2>Qué pasa por detrás</h2>
+  <p>LiveLeads ordena y recuerda. Nunca le escribe a un cliente sin que tú lo decidas, con una excepción que eliges tú: el mensaje que pide el @ a un número nuevo, solo si conectas WhatsApp. Este flujo está inferido de la interfaz y hay que confirmarlo con el código real.</p>
+<pre class="mermaid">
+sequenceDiagram
+  participant V as Vendedor
+  participant LL as LiveLeads
+  participant TT as TikTok Live
+  participant IA as Clasificador IA
+  participant WA as WhatsApp
+  participant PG as Culqi
+  V->>LL: Iniciar live
+  LL->>LL: Revisar que tenga días disponibles
+  LL->>TT: Conectar al live del @ del perfil
+  loop Cada comentario
+    TT-->>LL: Usuario, texto y hora
+    LL->>IA: Texto y etiquetas con descripción
+    IA-->>LL: Etiqueta asignada
+    LL->>LL: Guardar persona y contar repeticiones
+  end
+  V->>LL: Terminar live
+  LL->>LL: Armar Por rescatar y el resumen
+  V->>LL: Corregir la etiqueta de una persona
+  LL->>IA: Corrección para aprender
+  opt Con WhatsApp conectado
+    WA-->>LL: Mensaje de un número nuevo, hasta 12 h después
+    LL->>WA: Mensaje automático que pide su @
+    WA-->>LL: Su @ de TikTok
+    LL->>LL: Unir el número con sus comentarios
+  end
+  V->>PG: Pagar con Yape, Plin o tarjeta
+  PG-->>LL: Pago aprobado
+  LL->>LL: Sumar días al plan
+</pre>
+  <div class="tbl"><table>
+    <thead><tr><th>Estado</th><th>Qué ve el vendedor</th></tr></thead>
+    <tbody>
+      <tr><td><b>Todo conectado</b></td><td>Tres puntos verdes: TikTok, IA y WhatsApp</td></tr>
+      <tr><td><b>WhatsApp sin conectar</b></td><td>Punto apagado y el texto "WhatsApp sin conectar". El live funciona igual.</td></tr>
+      <tr><td><b>Sin días</b></td><td>Iniciar live lleva al Monedero con el aviso "Recarga días para conectar tu live"</td></tr>
+      <tr><td><b>Límite de tiendas</b></td><td>Con 3 tiendas desaparece Agregar tienda y aparece "Llegaste al límite de 3 tiendas".</td></tr>
+      <tr><td><b>Live activo</b></td><td>No se puede cambiar de tienda hasta terminar el live.</td></tr>
+      <tr><td><b>Buscando el live</b></td><td>El botón cambia a "Esperando live…" y dice "Buscando el live de @tutienda…"</td></tr>
+      <tr><td><b>No hay live</b></td><td>"Aún no vemos tu live. Ábrelo en TikTok con @tutienda y toca Reintentar." También ofrece "Revisar mi @".</td></tr>
+      <tr><td><b>Falla la conexión</b></td><td>"Tu live está activo, pero no logramos conectarnos. No es un problema tuyo." Con Reintentar.</td></tr>
+      <tr><td><b>Lista deslizada</b></td><td>La lista se queda quieta y aparece "↑ 4 nuevos". Al subir, se actualiza.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <span class="eyebrow">Pantallas</span>
+  <h2>Cómo se ve cada paso</h2>
+  <p>Mismos colores, fuente y componentes de la app real, con una tarea por pantalla. Datos de ejemplo.</p>
+  <h3>Primer uso</h3>
+  <div class="mm-grid">
+    <figure class="mm"><div class="mm-top"><b>Crear cuenta</b></div><div class="mm-body"><div class="mm-card"><b class="mm-h">Crea tu cuenta</b><span class="mm-p"><b>7 días gratis.</b> Sin tarjeta. Te toma 2 minutos.</span><label class="mm-f"><span>Tu @ de TikTok</span><span class="mm-in">@tutienda</span></label><label class="mm-f"><span>Correo</span><span class="mm-in">tienda@correo.com</span></label><label class="mm-f"><span>Contraseña</span><span class="mm-in">••••••••</span></label><span class="mm-btn">Crear cuenta</span></div></div><figcaption>Solo tres datos. WhatsApp ya no se pide aquí.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><b>Confirmar correo</b></div><div class="mm-body"><div class="mm-card"><b class="mm-h">Confirma tu correo</b><span class="mm-p">Te enviamos un código de 6 dígitos. Lo pedimos una sola vez, para que el día de tu live nada te frene.</span><span class="mm-in center" style="letter-spacing:.4em">123456</span><span class="mm-btn">Confirmar</span></div></div><figcaption>Se resuelve antes del primer live.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><b>Paso 1 de 2</b></div><div class="mm-body"><div class="mm-example"><em class="tc">Pregunta precio</em> rosa.ejemplo<br>q. precio de la casaca negra?</div><div class="mm-card"><b class="mm-h">Crea tus etiquetas</b><span class="mm-p">Las etiquetas son los grupos donde ordenamos a quienes comentan tu live.</span><span class="mm-btn">✨ Usar las recomendadas</span></div></div><figcaption>Un toque y quedan listas. Se puede dejar para después.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><b>Paso 2 de 2</b></div><div class="mm-body"><div class="mm-card"><b class="mm-h">Así haces tu primer live</b><span class="mm-p">1. Abre tu live en TikTok.<br>2. Presiona Iniciar live.<br>3. Vende tranquilo.<br>4. Al terminar, abre Por rescatar.</span><span class="mm-gift">🎁 Tienes 7 días gratis para probarlo todo.</span><span class="mm-btn">Empezar</span></div></div><figcaption>Explica todo el camino en cuatro líneas.</figcaption></figure>
+  </div>
+  <h3>Uso diario</h3>
+  <div class="mm-grid">
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Live</b></div><div class="mm-body"><div class="mm-card"><span class="mm-ico">▶</span><b class="mm-h">Monitorear live</b><span class="mm-p">Cuando estés en vivo en TikTok, presiona Iniciar live. Ordenamos los comentarios mientras vendes.</span><div class="mm-acc"><span class="mm-dot">♪</span><span><b>@tutienda</b><br><small>Listo para conectar</small></span><small class="mm-link">Cambiar</small></div><span class="mm-btn">Iniciar live</span><span class="mm-health"><i class="g"></i>TikTok <i class="g"></i>IA <i class="y"></i>WhatsApp</span></div></div><figcaption>Una sola acción posible.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Live</b><span class="mm-live">● EN VIVO · 12:04</span></div><div class="mm-body"><div class="mm-stats"><span><b>205</b><small>comentarios</small></span><span><b>9</b><small>quieren comprar</small></span><span><b>3</b><small>🔥 insisten</small></span></div><div class="mm-seg"><span class="on">Por atender · 9</span><span>Todo el chat</span></div><div class="mm-chips"><span class="on">Todos · 9</span><span>Quiere comprar · 3</span></div><div class="mm-row"><i class="c"></i><span><em class="tc">Quiere comprar</em> rosa.ejemplo 🔥 ×3<br>la quiero, cómo pago?</span><span class="mm-mini">Atender</span></div><div class="mm-row"><i class="c"></i><span><em class="tc">Quiere comprar</em> luz.ejemplo<br>me la separas la B12</span><span class="mm-mini">Atender</span></div><div class="mm-row"><i class="n"></i><span><em class="tn">Pregunta precio</em> kevin.ejemplo<br>cuánto cuesta la B15?</span><span class="mm-mini">Atender</span></div><div class="mm-bar"><span class="mm-mini">💡 ¿Qué digo ahora?</span><span class="mm-mini">Terminar live</span></div></div><figcaption>Una fila por persona. Lo que importa arriba y los controles al alcance del pulgar.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Live</b></div><div class="mm-body"><div class="mm-card"><b class="mm-h">Aún no vemos tu live</b><span class="mm-p">Ábrelo en TikTok con @tutienda y toca Reintentar.</span><span class="mm-btn">Reintentar</span><span class="mm-link" style="margin:0;text-align:center">Revisar mi @</span></div></div><figcaption>El mensaje explica qué pasa y qué hacer. Sin contadores de intentos.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><b>Fin del live</b></div><div class="mm-body"><div class="mm-card"><b class="mm-h center">Tu live terminó</b><div class="mm-stats" style="grid-template-columns:1fr 1fr"><span><b>205</b><small>comentarios</small></span><span><b>9</b><small>con intención de compra</small></span></div><div class="mm-row"><span><em class="tc">Quiere comprar</em></span><b>3</b></div><div class="mm-row"><span><em class="tn">Pregunta precio</em></span><b>6</b></div><span class="mm-p center">Ya las ordenamos: primero quienes quieren comprar.</span><span class="mm-btn">Ver a quién escribir</span><span class="mm-link" style="margin:0;text-align:center">Ver historial</span></div></div><figcaption>Reemplaza al mensaje que solo mandaba a Historial.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Por rescatar</b></div><div class="mm-body"><span class="mm-sub">Último live · 29 oct. 2026 · 8:00 p. m.</span><div class="mm-chips"><span class="on">7 Todos</span><span>2 Quiere comprar</span><span>2 Pregunta precio</span></div><div class="mp"><i style="background:#2bb39a"></i><div><b style="color:#2bb39a">luz.ejemplo</b> <small style="color:#2bb39a">Quiere comprar</small><br><em>“me la separas la B12 en M”</em></div><div class="mp-a"><span class="mm-pill">1 mensaje</span><span class="mm-pill dm">Escribirle al DM</span></div></div><div class="mp"><i style="background:#7b83f0"></i><div><b style="color:#7b83f0">rosa.ejemplo 🔥</b> <small style="color:#7b83f0">Pregunta precio</small><br><em>“precio porfa 🙏”</em></div><div class="mp-a"><span class="mm-pill">2 mensajes</span><span class="mm-pill dm">Escribirle al DM</span></div></div><div class="mp"><i style="background:#7b83f0"></i><div><b style="color:#7b83f0">pedro.ejemplo</b> <small style="color:#7b83f0">Pregunta precio</small><br><em>“cuánto cuesta la B15?”</em></div><div class="mp-a"><span class="mm-pill">1 mensaje</span><span class="mm-pill">En WhatsApp</span></div></div></div><figcaption>La fila de persona es la misma en Por rescatar y en Historial.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><b style="color:#7b83f0">rosa.ejemplo 🔥</b><small style="margin-left:6px;color:rgba(255,255,255,.4)">3 mensajes</small><span class="mm-burger" style="margin-left:auto">✕</span></div><div class="mm-body"><div class="mm-bubble">q. precio de la casaca negra?</div><div class="mm-bubble">precio porfa 🙏 <span class="mm-xn">×2</span></div><label class="mm-f"><span>Etiqueta</span><span class="mm-in">Pregunta precio ▾</span></label><span class="mm-p">Se abre TikTok y le escribes tú. LiveLeads no envía mensajes por ti.</span><span class="mm-pill dm" style="padding:10px">Escribirle al DM</span></div><figcaption>Se abre con "3 mensajes". En el celular sube desde abajo.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Historial</b></div><div class="mm-body"><div class="mm-chips"><span>24 h</span><span class="on">7 días</span><span>30 días</span></div><div class="mm-stats" style="grid-template-columns:1fr 1fr"><span><b>412</b><small>Comentaron</small></span><span><b>11</b><small>Con intención</small></span><span><b>7</b><small>Por escribir</small></span><span><b>2</b><small>En WhatsApp</small></span></div><div class="mm-chips"><span class="on">11 Todos</span><span>4 Quiere comprar</span><span>Filtros · 1</span></div><span class="mm-sub">3 sesiones · 11 leads</span><div class="mm-sess"><div class="mm-sess-h"><i></i><span><b>@tutienda</b> <span class="mm-ok">Finalizado</span><br><small>29 oct. 2026 · 1 h 12 min</small></span><small>7 leads ⌃</small></div></div></div><figcaption>Las estadísticas también filtran: tocas "Por escribir" y la lista cambia.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Etiquetas</b></div><div class="mm-body"><div class="mm-example"><em class="tn">Negociando</em> usuario_ejemplo<br>¿me lo dejas en menos si llevo 2?</div><span class="mm-p center">La IA pone cada comentario en una. Si se equivoca, cámbialo y aprende.</span><div class="mm-input"><span>Escribe una etiqueta</span><span class="mm-mini">Agregar</span></div><div class="mm-chips"><span>+ Queja</span><span>+ Saludo</span></div><div class="mm-row"><i class="c"></i><span>Quiere comprar<br><small>lo separa o pide el link</small></span></div></div><figcaption>Sección propia, separada de las personas.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Catálogo</b></div><div class="mm-body"><div class="mm-input" style="border-color:rgba(255,255,255,.08)"><span>Buscar por código o nombre</span><span class="mm-mini">+ Nuevo</span></div><div class="mm-prod"><span class="mm-thumb">▦</span><span><b class="mm-code">B12</b> Blusa de lino<br><small>Blusas · S M L · 4 unid.</small></span><b>S/ 45.00</b></div><div class="mm-prod"><span class="mm-thumb">▦</span><span><b class="mm-code">B15</b> Blusa blanca<br><small>Blusas · 1 unid.</small></span><b>S/ 39.90</b></div><div class="mm-prod off"><span class="mm-thumb">▦</span><span><b class="mm-code">C03</b> Casaca negra<br><small>Agotado</small></span><b>S/ 89.00</b></div></div><figcaption>El código va adelante: es lo que escribe el cliente.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><b>Nuevo producto</b><span class="mm-burger" style="margin-left:auto">✕</span></div><div class="mm-body mm-form"><div class="mm-two"><label class="mm-f"><span>Código *</span><span class="mm-in">B20</span></label><label class="mm-f"><span>Precio *</span><span class="mm-in">S/ 45.00</span></label></div><span class="mm-hint">Tus clientes lo piden así: <b>«quiero B20»</b></span><label class="mm-f"><span>Nombre *</span><span class="mm-in">Blusa de lino</span></label><span class="mm-toggle"><i></i>Tiene colores o tallas</span><div class="mm-actions"><span class="mm-link" style="margin:0">Cancelar</span><span class="mm-btn">Guardar producto</span></div></div><figcaption>En el celular abre a pantalla completa, con Guardar siempre visible.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Perfil</b><span class="mm-mini" style="margin-left:auto">@tutienda ▾</span></div><div class="mm-body"><div class="mm-card slim"><span class="mm-sub">Mis tiendas · 2 de 3</span><div class="mm-row"><i class="i"></i><span>@tutienda<br><small>WhatsApp conectado</small></span><span class="mm-ok">Activa</span></div><div class="mm-row"><i class="n"></i><span>@tienda.dos<br><small>WhatsApp sin conectar</small></span><span class="mm-mini">Cambiar</span></div><span class="mm-mini" style="text-align:center">+ Agregar tienda</span></div></div><figcaption>Hasta 3 tiendas con el mismo Monedero. No se cobra por tienda.</figcaption></figure>
+    <figure class="mm"><div class="mm-top"><span class="mm-burger">≡</span><b>Monedero</b></div><div class="mm-body"><div class="mm-card slim"><span style="font-size:26px;font-weight:800">7 <small style="font-size:13px;font-weight:400;color:rgba(255,255,255,.5)">días disponibles</small></span><span class="mm-sub">Hasta el 6 nov · Compartido entre tus tiendas</span><span class="mm-gift">🎁 Estás en tus 7 días gratis.</span><div class="mm-chips"><span class="on">15 días · S/ 20</span><span>30 días · S/ 40</span><span>60 días · S/ 80</span></div><span class="mm-btn">Pagar S/ 20 por 15 días</span><span class="mm-sub">Tus recargas: al crear tu cuenta, 7 días gratis</span></div></div><figcaption>Equivale a "Mis coins" de LiveShop, pero en días y soles.</figcaption></figure>
+  </div>
+  <div class="mm-menu">
+    <div class="mm-side"><span class="on">◉ Live</span><span>◎ Por rescatar <b style="color:#ff4d6d">5</b></span><span>◷ Historial</span><span>⚌ Etiquetas</span><span>▦ Catálogo</span><span>◯ Perfil</span><span class="mm-plan">Monedero · 7 días</span><span class="mm-out">↪ Cerrar sesión</span></div>
+    <div class="card"><h3>Menú plegable</h3><p class="fix">Se abre con ≡. El número en Por rescatar dice cuántas personas faltan escribir. El Monedero está al pie, siempre a la vista, sin avisos encima del contenido.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Sistema visual</span>
+  <h2>Valores de la app real</h2>
+  <p>Medidos en tiktoklive.me/app/history. El prototipo usa estos mismos valores.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Elemento</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td><b>Fuente</b></td><td>Inter · título 18 px peso 800 · cuerpo 14 px</td></tr>
+      <tr><td><b>Fondo</b></td><td><code>#0b0f1a</code></td></tr>
+      <tr><td><b>Marca</b></td><td>Rojo <code>#fe2c55</code> · cian <code>#25f4ee</code></td></tr>
+      <tr><td><b>Texto</b></td><td>Blanco al 90% · secundario al 50% · terciario al 40%</td></tr>
+      <tr><td><b>Superficies</b></td><td>Tarjeta: blanco al 2% con borde al 6% · campo: blanco al 5% con borde al 10%</td></tr>
+      <tr><td><b>Radios</b></td><td>Tarjeta 21.6 px · botón y campo 16.8 px · botón pequeño 12 px</td></tr>
+      <tr><td><b>Botón principal</b></td><td>Rojo, texto blanco, 14 px peso 600</td></tr>
+      <tr><td><b>Escribirle al DM</b></td><td><code>#4ade80</code> sobre verde al 7%, borde al 14.5%, 12 px peso 500</td></tr>
+      <tr><td><b>Fila de persona</b></td><td>Nombre 14 px peso 600 en el color de su etiqueta · comentario 12 px en cursiva, blanco al 40%</td></tr>
+      <tr><td><b>Filtros</b></td><td>12 px peso 600 · activo con blanco al 10% · número primero: "219 Todos"</td></tr>
+      <tr><td><b>Finalizado</b></td><td><code>#4ade80</code> sobre verde al 8%, 10 px</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <span class="eyebrow">Referencias</span>
+  <h2>Qué tomamos de cada pantalla</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Origen</th><th>Se mantiene</th><th>Se deja fuera</th></tr></thead>
+    <tbody>
+      <tr><td><b>LiveLeads actual</b></td><td>Sistema visual · conexión rápida · pantalla simple · etiquetas · sesiones desplegables · mensajes agrupados · Escribirle al DM</td><td>Dos paneles en celular · ir a Historial al terminar</td></tr>
+      <tr><td><b>LiveShop</b></td><td>Personas activas · 🔥 insiste y 🆕 nuevo · ¿Qué digo ahora? · orden por interés · buscador · estado visible</td><td>Pausar, Actualizar y Reiniciar fijos · intentos a la vista · filtro de horas durante el live · "Compradores"</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <span class="eyebrow">Tarifas</span>
+  <h2>Qué se paga y cómo</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Opción</th><th>Días</th><th>Precio</th><th>Por día</th></tr></thead>
+    <tbody>
+      <tr><td><b>Prueba gratis</b></td><td>7</td><td>S/ 0</td><td>Sin tarjeta</td></tr>
+      <tr><td><b>Paquete 15</b></td><td>15</td><td>S/ 20</td><td>S/ 1.33</td></tr>
+      <tr><td><b>Paquete 30</b></td><td>30</td><td>S/ 40</td><td>S/ 1.33</td></tr>
+      <tr><td><b>Paquete 60</b></td><td>60</td><td>S/ 80</td><td>S/ 1.33</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="plain">
+    <li>El Monedero es por cuenta: no se cobra por tienda. Incluye hasta 3 tiendas, que comparten los mismos días.</li>
+    <li>Pagas solo cuando recargas. Si aún te quedan días, los nuevos se suman al final.</li>
+    <li>Pagos con Yape, Plin o tarjeta, procesados por Culqi. En el celular se abre la app. En la computadora, un código QR.</li>
+    <li>Boleta con DNI o factura con RUC.</li>
+    <li>Moneda: siempre en soles, con el formato S/ 45.00.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="eyebrow">Soluciones</span>
+  <h2>Las 21 mejoras del producto</h2>
+  <p>Cada mejora ya funciona en el prototipo. Puedes probarla en la pantalla indicada.</p>
+  <ol class="issues">
+    <li><span class="pin">1</span><div><b>El correo se confirma al registrarse.</b><p class="fix">Así Iniciar live funciona desde el primer día. <b>Pruébalo en:</b> Crear cuenta.</p></div></li>
+    <li><span class="pin">2</span><div><b>Sin avisos encima del contenido.</b><p class="fix">Los días que quedan pasaron al pie del menú y cada sección empieza arriba. <b>Pruébalo en:</b> cualquier sección.</p></div></li>
+    <li><span class="pin">3</span><div><b>Estados vacíos con una acción clara.</b><p class="fix">Un mensaje y el siguiente paso, por ejemplo "Ir a Live". <b>Pruébalo en:</b> Por rescatar, con un filtro sin resultados.</p></div></li>
+    <li><span class="pin">4</span><div><b>Menú en el orden de uso.</b><p class="fix">Live, Por rescatar e Historial primero. Configuración y cuenta después. <b>Pruébalo en:</b> el menú lateral.</p></div></li>
+    <li><span class="pin">5</span><div><b>Solo los controles necesarios.</b><p class="fix">Iniciar live y Terminar live con confirmación. Sin Pausar, Actualizar ni Reiniciar fijos: Reintentar aparece solo si hay un error. <b>Pruébalo en:</b> Live.</p></div></li>
+    <li><span class="pin">6</span><div><b>Etiquetas con sección propia.</b><p class="fix">Configurar y revisar personas ya no comparten pantalla. <b>Pruébalo en:</b> Etiquetas y Por rescatar.</p></div></li>
+    <li><span class="pin">7</span><div><b>Nombres que usa un vendedor.</b><p class="fix">"Prospección de Venta" pasó a "Por rescatar", y siempre decimos "la IA". <b>Pruébalo en:</b> todo el panel.</p></div></li>
+    <li><span class="pin">8</span><div><b>WhatsApp claro y opcional.</b><p class="fix">Se conecta en Perfil con un QR. El mensaje automático se edita con una vista previa de cómo le llega al cliente. <b>Pruébalo en:</b> Perfil.</p></div></li>
+    <li><span class="pin">9</span><div><b>Estado del sistema siempre visible.</b><p class="fix">Tres puntos muestran TikTok, IA y WhatsApp antes y durante el live. <b>Pruébalo en:</b> Live.</p></div></li>
+    <li><span class="pin">10</span><div><b>Catálogo compacto con el código adelante.</b><p class="fix">Formulario en una columna, código validado en vivo y precio en soles. <b>Pruébalo en:</b> Catálogo.</p></div></li>
+    <li><span class="pin">11</span><div><b>Sin roles confusos.</b><p class="fix">"Administrador" se reemplazó por tu @ de TikTok. <b>Pruébalo en:</b> Perfil.</p></div></li>
+    <li><span class="pin">12</span><div><b>Monedero en días y soles.</b><p class="fix">Reemplaza a "coins": muestra cuántos días quedan, hasta qué fecha, cuánto cuesta cada paquete y tus recargas. <b>Pruébalo en:</b> Perfil, Monedero.</p></div></li>
+    <li><span class="pin">13</span><div><b>Lectura cómoda.</b><p class="fix">Textos de ayuda de 14 px, y etiquetas con nombre además de color. <b>Pruébalo en:</b> todo el panel.</p></div></li>
+    <li><span class="pin">14</span><div><b>Live ordenado por persona.</b><p class="fix">"Por atender" muestra una fila por persona, por etiqueta y luego por insistencia. "Todo el chat" guarda el resto. <b>Pruébalo en:</b> Live.</p></div></li>
+    <li><span class="pin">15</span><div><b>La lista no se mueve mientras lees.</b><p class="fix">Si deslizas, se queda quieta y avisa "↑ 4 nuevos". <b>Pruébalo en:</b> Live, con varios comentarios.</p></div></li>
+    <li><span class="pin">16</span><div><b>Mensajes de conexión claros.</b><p class="fix">Distingue entre "Aún no vemos tu live" y "no logramos conectarnos", y muestra el @ que busca. <b>Pruébalo en:</b> Live, con el botón Conexión de la barra del prototipo.</p></div></li>
+    <li><span class="pin">17</span><div><b>Resumen útil al terminar.</b><p class="fix">Muestra comentarios y personas por etiqueta, y lleva directo a "Ver a quién escribir". <b>Pruébalo en:</b> Terminar live.</p></div></li>
+    <li><span class="pin">18</span><div><b>Detalle de persona en un solo lugar.</b><p class="fix">Mensajes agrupados, etiqueta y Escribirle al DM juntos, sin botones repetidos. <b>Pruébalo en:</b> Por rescatar.</p></div></li>
+    <li><span class="pin">19</span><div><b>Historial directo a cada persona.</b><p class="fix">Cada live se despliega con sus personas, sus mensajes y Escribirle al DM. <b>Pruébalo en:</b> Historial.</p></div></li>
+    <li><span class="pin">20</span><div><b>Estadísticas que filtran.</b><p class="fix">Periodo, cuatro tarjetas, etiquetas con número y filtros por estado, interés y orden. Todo se actualiza junto. <b>Pruébalo en:</b> Historial.</p></div></li>
+    <li><span class="pin">21</span><div><b>Varias tiendas en una cuenta.</b><p class="fix">Hasta 3 tiendas, con selector arriba y un solo Monedero. Agregar una toma 3 pasos. <b>Pruébalo en:</b> Perfil, Mis tiendas.</p></div></li>
+  </ol>
+</section>
+
+<section>
+  <span class="eyebrow">Copywriting UX</span>
+  <h2>Cómo le hablamos al usuario</h2>
+  <ul class="plain">
+    <li><b>Hablamos de tú</b> y con palabras de vendedor: live, comentario, cliente.</li>
+    <li><b>El botón dice qué pasa:</b> "Pagar S/ 20 por 15 días", no "Continuar".</li>
+    <li><b>Primero el beneficio, después la instrucción:</b> "Lo pedimos una sola vez, para que el día de tu live nada te frene".</li>
+    <li><b>Los errores dicen cómo arreglarlo:</b> "Ese código ya está en uso. Prueba con B13."</li>
+    <li><b>Siempre aclaramos quién escribe:</b> "Le escribes tú, desde TikTok".</li>
+  </ul>
+  <div class="tbl"><table>
+    <thead><tr><th>Momento</th><th>Antes</th><th>Ahora</th></tr></thead>
+    <tbody>
+      <tr><td>Prueba</td><td>Prueba gratis: te quedan 5 días · Ver mis coins</td><td>7 días gratis. Sin tarjeta. Te toma 2 minutos.</td></tr>
+      <tr><td>Etiquetas</td><td>La IA pone cada comentario en una de tus etiquetas</td><td>Las etiquetas son los grupos donde ordenamos a quienes comentan tu live.</td></tr>
+      <tr><td>Inicio del live</td><td>Para iniciar el live, primero confirma tu correo</td><td>Cuando estés en vivo en TikTok, presiona Iniciar live. Ordenamos los comentarios mientras vendes.</td></tr>
+      <tr><td>Fin del live</td><td>Live finalizado · Ir al Historial</td><td>Tu live terminó · Ver a quién escribir</td></tr>
+      <tr><td>Después del live</td><td>Prospección de Venta</td><td>Por rescatar · Empieza por quienes insisten 🔥</td></tr>
+      <tr><td>Monedero</td><td>5 coins = 5 días de lives</td><td>7 días disponibles · hasta el 6 nov</td></tr>
+      <tr><td>Pago</td><td>Pagar S/ 20 con Nequi, PSE o tarjeta</td><td>Pagar S/ 20 por 15 días · Yape, Plin o tarjeta</td></tr>
+      <tr><td>Conexión</td><td>No se pudo conectar: intento 16 de 60</td><td>Aún no vemos tu live. Ábrelo en TikTok y toca Reintentar.</td></tr>
+      <tr><td>Durante el live</td><td>Compradores</td><td>Quieren comprar</td></tr>
+      <tr><td>Contacto con el cliente</td><td>Escribirle al DM</td><td>Escribirle al DM · Se abre TikTok y le escribes tú</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <span class="eyebrow">Antes de construir</span>
+  <h2>Lo que falta confirmar</h2>
+  <ul class="plain">
+    <li>El prototipo usa datos de ejemplo: el live, los pagos y el QR son simulados.</li>
+    <li>Falta probarlo con un vendedor real, sobre todo en el celular.</li>
+    <li>Culqi es la pasarela de ejemplo. Falta elegir entre Culqi y Niubiz.</li>
+    <li>La marca debe decidir si catálogo y WhatsApp ya se comunican en redes.</li>
+    <li>El clasificador debe separar mejor: en un live real, las 219 personas quedaron en Interesado.</li>
+    <li>Hay que aclarar por qué Historial dice 245 leads y la sesión dice 219.</li>
+    <li>El texto terciario de la app (blanco al 40%) da un contraste aproximado de 3.9:1. Conviene subirlo a 60% en textos pequeños.</li>
+    <li>La app real aún no tiene estadísticas, preguntas frecuentes ni horario. El prototipo los muestra como propuesta.</li>
+    <li>Falta definir con el equipo técnico cómo se comprueba que una tienda agregada es tuya, y si un mismo WhatsApp puede estar en dos tiendas.</li>
+    <li>"97% de precisión" no aparece en esta guía, porque necesita una medición que lo respalde.</li>
+  </ul>
+</section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+  var dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "neutral", securityLevel: "strict" });
+</script>
+</body>
+</html>

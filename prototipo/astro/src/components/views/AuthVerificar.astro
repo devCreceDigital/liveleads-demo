@@ -1,0 +1,17 @@
+---
+---
+<div class="auth" data-view="verificar">
+  <form class="auth-box" id="f-ver" novalidate>
+    <div class="brand"><span class="ll">LL</span>LiveLeads</div>
+    <div class="steps"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+    <div class="card top">
+      <h1>Confirma tu correo</h1>
+      <p class="muted" style="margin:0">Te enviamos un código de 6 dígitos a <b id="v-mail">tu correo</b>. Lo pedimos una sola vez, para que el día de tu live nada te frene.</p>
+      <input class="in mono" id="v-code" inputmode="numeric" maxlength="6" placeholder="000000" style="font-size:24px;letter-spacing:.4em;text-align:center">
+      <span class="help">Para probar el prototipo, escribe cualquier código de 6 dígitos.</span>
+      <span class="help err" id="v-err" hidden>El código tiene 6 dígitos.</span>
+      <button class="btn block" type="submit">Confirmar</button>
+      <button class="link" type="button" data-toast="Te enviamos un código nuevo">Reenviar código</button>
+    </div>
+  </form>
+</div>

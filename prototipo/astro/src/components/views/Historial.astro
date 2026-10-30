@@ -1,0 +1,24 @@
+---
+---
+    <div class="page wide" data-view="historial">
+      <form class="row" id="f-his"><input class="in" id="his-q" placeholder="Buscar @usuario, comentario o código"><button class="btn" type="submit">Buscar</button></form>
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap"><div class="chips" id="his-range"><button type="button" class="chip" data-r="1">24 h</button><button type="button" class="chip on" data-r="7">7 días</button><button type="button" class="chip" data-r="30">30 días</button></div><button class="btn soft sm" data-toast="Descargamos tu reporte en PDF">Reporte PDF</button></div>
+      <div class="his-stats" id="his-stats"></div>
+      <div class="row" style="align-items:flex-start"><div class="chips" id="his-tags" style="flex:1"></div><button class="pill" id="his-fbtn" aria-expanded="false">Filtros</button></div>
+      <div class="card slim" id="his-fpanel" hidden>
+        <h3>Estado</h3><div class="chips" id="his-state"><button class="chip on" data-hst="todos">Todos</button><button class="chip" data-hst="pendiente">Por escribir</button><button class="chip" data-hst="escrito">Escritos</button><button class="chip" data-hst="whatsapp">En WhatsApp</button></div>
+        <h3>Interés</h3><div class="chips"><button class="chip" id="his-hot">🔥 Insisten</button></div>
+        <h3>Ordenar por</h3><div class="chips" id="his-sort"><button class="chip on" data-so="interes">Más interés</button><button class="chip" data-so="mensajes">Más mensajes</button></div>
+        <button class="link" id="his-clear" style="align-self:flex-start">Limpiar filtros</button>
+      </div>
+      <span class="mono-note" id="his-note"></span>
+      <div style="display:flex;flex-direction:column;gap:12px" id="his-lives"></div>
+      <details class="resumen">
+        <summary>Qué preguntaron y cuándo</summary>
+        <div><div class="two">
+          <div class="card slim"><h3>Lo que más te preguntaron</h3><div class="chips" id="his-q-top"></div><span class="help">Explícalo al inicio de tu próximo live.</span></div>
+          <div class="card slim"><h3>Horario con más audiencia</h3><div class="bars" id="his-bars"></div><span class="help" id="his-peak"></span></div>
+        </div></div>
+      </details>
+      <p class="foot">Datos de ejemplo</p>
+    </div>
