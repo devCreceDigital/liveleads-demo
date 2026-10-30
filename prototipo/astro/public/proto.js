@@ -9,7 +9,7 @@
   var EXTRA = [{n:"Queja", d:"reclama por un pedido o atención", c:"#ef5350", k:["reclamo","no llegó","queja"]},{n:"Saludo", d:"solo saluda o comenta sin intención", c:"#8f9ab4", k:["hola","saludos","jaja"]}];
 
   var st = load() || {
-    user:"@tutienda", mail:"tienda@correo.com", labels:[], days:7, pack:0, wa:true, stores:[{u:"@tutienda",wa:true}], rec:[],
+    user:"@tutienda", mail:"tienda@correo.com", labels:[], days:7, pack:0, wa:true, waMsg:"Hola, vengo del live, mi TikTok es @", stores:[{u:"@tutienda",wa:true}], rec:[],
     products:[
       {code:"B12", name:"Blusa de lino", price:45, cat:"Blusas", avail:true, desc:"Manga corta, tela fresca", vars:{S:1,M:2,L:1}},
       {code:"B15", name:"Blusa de lino blanca", price:39.9, cat:"Blusas", avail:true, desc:"", units:1},
@@ -27,7 +27,7 @@
       {live:"l1", u:"mari.ejemplo", t:"Pregunta talla", s:"pendiente", said:[["20:51","tienes talla M en negro?"]]},
       {live:"l1", u:"kevin.ejemplo", t:"Envío", s:"pendiente", said:[["20:55","envías a Trujillo?"]]},
       {live:"l1", u:"ana.ejemplo", t:"Quiere comprar", s:"escrito", said:[["21:02","lo llevo, cómo pago?"]]},
-      {live:"l1", u:"pedro.ejemplo", t:"Pregunta precio", s:"whatsapp", said:[["21:05","cuánto cuesta la B15?"]], wa:"987654321"},
+      {live:"l1", u:"pedro.ejemplo", t:"Pregunta precio", s:"whatsapp", said:[["21:05","cuánto cuesta la B15?"]], wa:"987654321", conf:false},
       {live:"l1", u:"lulu.ejemplo", t:"Pregunta talla", s:"pendiente", said:[["21:09","hay L?"]]},
       {live:"l2", u:"sofi.ejemplo", t:"Quiere comprar", s:"pendiente", said:[["20:41","la quiero en azul"],["20:43","la quiero en azul"]], hot:true},
       {live:"l2", u:"javi.ejemplo", t:"Envío", s:"escrito", said:[["20:58","llega a Cusco?"]]},
@@ -45,8 +45,8 @@
   var NOOP=new Proxy(function(){},{get:function(t,k){return k===Symbol.toPrimitive?function(){return ""}:NOOP},set:function(){return true},apply:function(){return NOOP}});
   function $(s,r){return (r||document).querySelector(s)||NOOP}
   function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
-  function save(){try{sessionStorage.setItem("ll-proto-6",JSON.stringify(st))}catch(e){}}
-  function load(){try{return JSON.parse(sessionStorage.getItem("ll-proto-6"))}catch(e){return null}}
+  function save(){try{sessionStorage.setItem("ll-proto-7",JSON.stringify(st))}catch(e){}}
+  function load(){try{return JSON.parse(sessionStorage.getItem("ll-proto-7"))}catch(e){return null}}
   function soles(n){return "S/ "+Number(n).toFixed(2)}
   function tagOf(n){return st.labels.concat(TAGS,EXTRA).filter(function(t){return t.n===n})[0]||{n:n,c:"#8f9ab4"}}
   function tagHtml(n){var t=tagOf(n);return '<span class="tag" style="background:'+t.c+'26;color:'+t.c+'"><i class="sw" style="background:'+t.c+'"></i>'+n+'</span>'}
@@ -265,12 +265,15 @@
     var labels=labelsNow().concat(EXTRA);
     $("#d-sel").innerHTML=labels.map(function(l){return '<option'+(l.n===p.t?" selected":"")+'>'+esc(l.n)+'</option>'}).join("");
     $("#d-wa-box").hidden=p.s==="whatsapp"||!st.wa; $("#d-wa-off").hidden=p.s==="whatsapp"||st.wa; $("#d-num").value="";
+    var isWa=p.s==="whatsapp"; $("#d-conf").hidden=!isWa;
+    if(isWa){ $("#d-conf-t").textContent=p.conf?"Cuenta confirmada":"Cuenta sin confirmar"; $("#d-conf-d").textContent=p.conf?"Ya puedes compartir los datos del pedido.":"Antes de compartir datos del pedido, confirma que @"+p.u+" es suya."; $("#d-conf-b").hidden=!!p.conf; }
     $("#d-open").innerHTML=ICO_DM+"Escribirle al DM";
     $("#d-done").textContent=p.s==="escrito"?"Marcar como pendiente":"Marcar como escrito";
     openOv("#drawer");
   }
   $("#d-sel").onchange=function(){st.people[cur].t=this.value;save();render();toast("Etiqueta cambiada. La IA aprende de esto.");};
   $("#d-open").onclick=function(){sendDm(cur);};
+  $("#d-conf-b").onclick=function(){st.people[cur].conf=true;save();toast("Le preguntamos: ¿Eres tú? tiktok.com/@"+st.people[cur].u);openPerson(cur);};
   $("#d-done").onclick=function(){var p=st.people[cur];p.s=p.s==="escrito"?"pendiente":"escrito";save();render();closeAll();};
   $("#d-wa").onclick=function(){var n=$("#d-num").value.trim();if(!/^9\d{8}$/.test(n)){$("#d-num").classList.add("in","err");toast("El número tiene 9 dígitos y empieza con 9");return;}$("#d-num").classList.remove("err");st.people[cur].s="whatsapp";st.people[cur].wa=n;save();render();closeAll();toast("Guardado. Ya puedes escribirle por WhatsApp");};
 
@@ -380,6 +383,14 @@
   };
 
   /* ---------- perfil / plan ---------- */
+  function waLink(){ return "https://wa.me/51987654821?text="+encodeURIComponent(st.waMsg); }
+  function copyLink(){
+    var ok=function(){toast("Enlace copiado");}, no=function(){var i=$("#wl-url");if(i.select)i.select();toast("Copia el enlace seleccionado");};
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(waLink()).then(ok,no); else no();
+  }
+  $("#wl-copy").onclick=copyLink;
+  $("#live-link").onclick=copyLink;
+  $("#wl-msg").oninput=function(){st.waMsg=this.value;save();$("#wl-url").value=waLink();};
   function renderPerfil(){
     $$(".acc-name").forEach(function(e){e.textContent=st.user});
     $("#pf-mail").textContent=st.mail;
@@ -390,6 +401,9 @@
     $("#pf-days").textContent="Hasta el "+end.getDate()+" "+ms[end.getMonth()]+" · 1 día = un día de lives · Compartido entre tus tiendas";
     $("#rec-list").innerHTML=st.rec.map(function(r){return '<div><span>'+r[0]+'</span><b>'+r[1]+'</b></div>'}).join("")+'<div><span>Al crear tu cuenta</span><span>7 días gratis</span></div>';
     renderStores();
+    $("#wl-box").hidden=!st.wa; $("#live-link").hidden=!st.wa;
+    if(document.activeElement!==$("#wl-msg")) $("#wl-msg").value=st.waMsg;
+    $("#wl-url").value=waLink();
     $("#pf-gift").hidden=!!st.paid;
     $("#plan-pill").textContent="Monedero · "+st.days+" días";
     $("#pf-packs").innerHTML=PACKS.map(function(k,i){return '<button class="chip'+(st.pack===i?" on":"")+'" data-pack="'+i+'">'+k.d+' días · S/ '+k.p+'</button>'}).join("");
