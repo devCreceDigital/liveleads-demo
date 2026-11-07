@@ -8,6 +8,7 @@ Este repositorio contiene el prototipo navegable del producto y el Mapa UX que l
 
 | Ruta | Qué es |
 |---|---|
+| `landing/` | Landing de Live Leads: demo, cómo funciona, waitlist, preguntas frecuentes y contacto |
 | `docs/mapa-ux-liveleads.html` | Mapa UX: guía para el usuario, mapa del sitio, flujos, pantallas, sistema visual, tarifas, mejoras y copywriting |
 | `prototipo/liveleads-prototipo.html` | Prototipo navegable en un solo archivo |
 | `prototipo/astro/` | El mismo prototipo como proyecto Astro, con una página por pantalla |
