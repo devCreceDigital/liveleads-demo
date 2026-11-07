@@ -12,6 +12,13 @@
         <h3>Conexiones de <span class="acc-name"></span></h3>
         <div class="row"><span class="dot"></span><span class="grow">TikTok conectado</span></div>
         <div class="row"><span class="dot" id="pf-wa-dot"></span><span class="grow" id="pf-wa-txt">WhatsApp conectado · +51 9•• ••• 821</span><button class="toggle" id="pf-wa" aria-pressed="true"><i></i></button></div>
+        <div id="wl-box" style="display:flex;flex-direction:column;gap:10px">
+          <h3>Enlace para tus clientes</h3>
+          <span class="help">Ponlo en tu bio o en el mensaje fijado del live. Abre WhatsApp con el mensaje ya escrito y el cliente solo completa su @.</span>
+          <label class="field"><span>Mensaje inicial</span><input class="in" id="wl-msg"></label>
+          <div class="row"><input class="in mono" id="wl-url" readonly aria-label="Enlace de WhatsApp" style="font-size:12px"><button class="btn sm" id="wl-copy">Copiar</button></div>
+          <span class="help">Si el mensaje ya trae su @, no se lo volvemos a pedir. Eso no prueba que la cuenta sea suya: confírmala antes de compartir datos del pedido.</span>
+        </div>
         <details>
           <summary class="muted" style="cursor:pointer">Mensaje automático para pedir el @</summary>
           <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
