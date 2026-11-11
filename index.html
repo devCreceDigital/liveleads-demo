@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LiveLeads · Demo y recursos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{--bg:#090d18;--surface:#0f1626;--line:#1f2a47;--fg:#eaeef8;--muted:#9aa5c0;--pink:#ee4d6f;--teal:#3fd9d8;--grad:linear-gradient(135deg,#ee4d6f,#3fd9d8);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'Plus Jakarta Sans',system-ui,sans-serif;line-height:1.55;padding:0 max(16px,env(safe-area-inset-left)) 56px;background-image:radial-gradient(800px 480px at 90% -60px,rgba(238,77,111,.16),transparent 70%),radial-gradient(700px 480px at -10% 40%,rgba(63,217,216,.10),transparent 70%);background-repeat:no-repeat}
+.wrap{max-width:760px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px;padding:24px 0;font-weight:800;font-size:19px}
+.ll{width:38px;height:38px;border-radius:11px;background:var(--grad);color:#0a0e1a;display:grid;place-items:center;font-weight:800;font-size:17px}
+h1{font-size:clamp(32px,6vw,52px);line-height:1.1;letter-spacing:-.02em;margin:22px 0 12px;text-wrap:balance}
+.g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted);font-size:18px;margin:0 0 30px;max-width:34em}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+a.item{display:block;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--fg);text-decoration:none}
+a.item:hover,a.item:focus-visible{border-color:var(--teal);outline:none}
+a.item b{display:block;font-size:18px;margin-bottom:2px}
+a.item span{color:var(--muted);font-size:15px}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.note{margin-top:28px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><span class="ll">LL</span>LiveLeads</header>
+  <main>
+    <span class="mono">Demo y recursos</span>
+    <h1>Ordena a quienes <span class="g">preguntaron en tu live</span></h1>
+    <p class="lead">Páginas del proyecto Live Leads para vendedores de TikTok Live. Es una demo: los datos son de ejemplo.</p>
+    <ul>
+      <li><a class="item" href="landing/"><b>Landing</b><span>Qué es Live Leads, cómo funciona y la waitlist.</span></a></li>
+      <li><a class="item" href="kit-live-sin-improvisar/"><b>Kit Live sin improvisar</b><span>Checklist para antes, durante y después del live, con mensajes de seguimiento.</span></a></li>
+      <li><a class="item" href="prototipo/liveleads-prototipo.html"><b>Prototipo navegable</b><span>Recorre las pantallas del producto con datos de ejemplo.</span></a></li>
+      <li><a class="item" href="docs/mapa-ux-liveleads.html"><b>Mapa UX</b><span>Guía del producto: flujos, pantallas y sistema visual.</span></a></li>
+    </ul>
+    <p class="note">Live Leads no envía mensajes por ti y no es una herramienta oficial de TikTok.</p>
+  </main>
+</div>
+</body>
+</html>
