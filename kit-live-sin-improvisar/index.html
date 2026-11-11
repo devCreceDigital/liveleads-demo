@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kit Live sin improvisar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Concepto: guía de oficio en columna única con índice lateral, panel oscuro de Live Leads.
+   Color: fondo noche, superficie, texto, apagado, rosa de marca, turquesa de marca. */
+:root{
+  --bg:#090d18; --surface:#0f1626; --surface2:#151e33; --line:#1f2a47;
+  --fg:#eaeef8; --muted:#9aa5c0; --pink:#ee4d6f; --teal:#3fd9d8; --ok:#3ddc84; --warn:#f4c430;
+  --grad:linear-gradient(135deg,#ee4d6f,#3fd9d8);
+  --on-grad:#0a0e1a; --glow:rgba(238,77,111,.16); --glow2:rgba(63,217,216,.12);
+  --f-body:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f5f7fb; --surface:#ffffff; --surface2:#eef1f8; --line:#dde3f0;
+  --fg:#10162a; --muted:#566079; --pink:#d93a5d; --teal:#0b8f8e; --ok:#14804a; --warn:#9a7400;
+  --on-grad:#0a0e1a; --glow:rgba(238,77,111,.10); --glow2:rgba(63,217,216,.10); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#f5f7fb; --surface:#ffffff; --surface2:#eef1f8; --line:#dde3f0;
+  --fg:#10162a; --muted:#566079; --pink:#d93a5d; --teal:#0b8f8e; --ok:#14804a; --warn:#9a7400;
+  --on-grad:#0a0e1a; --glow:rgba(238,77,111,.10); --glow2:rgba(63,217,216,.10); color-scheme:light}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;
+  background-image:radial-gradient(900px 520px at 90% -80px,var(--glow),transparent 70%),radial-gradient(800px 520px at -10% 30%,var(--glow2),transparent 70%);background-repeat:no-repeat}
+.wrap{max-width:1040px;margin:0 auto}
+a{color:var(--teal)}
+h1,h2,h3{line-height:1.15;letter-spacing:-.02em;text-wrap:balance;margin:0}
+.g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mono{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:6px}
+
+/* barra superior */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:20px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px;letter-spacing:-.01em}
+.ll{width:38px;height:38px;border-radius:11px;background:var(--grad);color:var(--on-grad);display:grid;place-items:center;font-weight:800;font-size:17px}
+.top .mono{display:none}
+@media(min-width:640px){.top .mono{display:block}}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:44px;align-items:center;padding-block:44px 56px}
+@media(max-width:860px){.hero{grid-template-columns:1fr;gap:32px;padding-block:24px 40px}}
+.hero h1{font-size:clamp(36px,6.4vw,64px);font-weight:800;margin-block:14px 18px}
+.hero p.lead{font-size:19px;color:var(--muted);max-width:34em;margin:0 0 22px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;padding:0;margin:0;list-style:none}
+.chips li{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px}
+.form h2{font-size:23px;margin-bottom:6px}
+.form p{margin:0 0 18px;color:var(--muted);font-size:15px}
+label{display:block;font-size:14px;font-weight:600;margin:0 0 6px}
+.f{margin-bottom:14px}
+input,select{width:100%;font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;font:inherit;font-weight:800;font-size:17px;border:0;border-radius:999px;padding:15px 22px;cursor:pointer;background:var(--grad);color:var(--on-grad);text-decoration:none}
+.btn.sm{width:auto;font-size:14px;padding:9px 16px}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.fine{font-size:12.5px;color:var(--muted);margin:12px 0 0}
+.ok-msg{display:none;margin-top:14px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok);font-weight:700;font-size:15px}
+.ok-msg.on{display:block}
+
+/* índice */
+.toc{margin-bottom:56px}
+.toc h2{font-size:15px;margin-bottom:14px}
+.toc ol{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 18px;margin:0;padding:0;list-style:none;counter-reset:q}
+@media(max-width:700px){.toc ol{grid-template-columns:1fr}}
+.toc li{counter-increment:q}
+.toc a{display:flex;gap:14px;align-items:baseline;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);text-decoration:none;font-weight:600}
+.toc a:hover{border-color:var(--teal)}
+.toc a::before{content:counter(q,decimal-leading-zero);font-family:var(--f-mono);font-size:12.5px;color:var(--pink)}
+
+/* secciones */
+section.q{padding-block:34px;border-top:1px solid var(--line)}
+section.q h2{font-size:clamp(26px,4vw,36px);margin-bottom:12px}
+section.q>p{color:var(--muted);max-width:40em;margin:0 0 20px}
+.moment{display:grid;gap:14px;margin-bottom:18px}
+.moment h3{font-size:19px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cnt{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.chk{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.chk label{display:flex;gap:12px;align-items:flex-start;margin:0;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-weight:500;font-size:16px;cursor:pointer}
+.chk input{width:22px;height:22px;flex:none;margin:2px 0 0;accent-color:var(--pink);padding:0}
+.chk input:checked+span{color:var(--muted);text-decoration:line-through}
+.bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;width:0;background:var(--grad);border-radius:99px;transition:width .25s}
+.tip{border-left:3px solid var(--teal);padding:4px 0 4px 16px;margin:20px 0;color:var(--fg)}
+.tip b{color:var(--teal)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+.no,.si{border-radius:16px;padding:18px;border:1px solid var(--line);background:var(--surface)}
+.no .mono{color:var(--pink)} .si .mono{color:var(--ok)}
+.no p,.si p{margin:8px 0 0}
+.no p{color:var(--muted)}
+
+/* mock de Live Leads */
+.mock{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:6px}
+.mock .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface);margin-top:10px;flex-wrap:wrap}
+.mock .row:first-of-type{margin-top:0}
+.tag{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:5px 11px;border-radius:8px}
+.t-c{background:color-mix(in srgb,#f2597a 18%,transparent);color:#f2597a}
+.t-n{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.t-i{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.ex{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+
+/* introducción de Live Leads */
+.warn-title{margin:38px 0 4px;font-size:clamp(24px,4.6vw,40px);font-weight:800;letter-spacing:-.02em;line-height:1.12;text-wrap:balance;text-align:center;text-transform:uppercase}
+.ll-intro{margin-top:30px;border:1px solid var(--line);border-radius:24px;padding:clamp(20px,4vw,34px);background:var(--surface);background-image:radial-gradient(600px 260px at 100% -20%,var(--glow),transparent 70%)}
+.ll-intro .head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.ll-intro h3{font-size:clamp(23px,3.6vw,30px);margin-bottom:10px}
+.ll-intro .sub{color:var(--muted);max-width:38em;margin:0 0 22px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 24px;padding:0;list-style:none;counter-reset:s}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}
+.steps li{counter-increment:s;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--grad);color:var(--on-grad);font-weight:800;font-size:14px;margin-bottom:10px}
+.steps b{display:block;margin-bottom:4px}
+.steps span{color:var(--muted);font-size:15px;line-height:1.5}
+.board{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:16px}
+.board-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.live-dot{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--pink)}
+.live-dot::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 4px color-mix(in srgb,var(--pink) 25%,transparent)}
+.lead{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--surface);margin-top:10px}
+.lead:first-of-type{margin-top:0}
+.lead b{font-size:15px}
+.lead em{grid-column:1;font-style:normal;color:var(--muted);font-size:15px}
+.lead .tag{grid-row:1/3;grid-column:2}
+.dm{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;font-weight:700;color:var(--teal)}
+.limits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+@media(max-width:700px){.limits{grid-template-columns:1fr}}
+.limits div{font-size:14.5px;color:var(--muted);padding:12px 14px;border:1px solid var(--line);border-radius:12px}
+.limits b{color:var(--fg)}
+
+/* carrusel de videos */
+.demo-vids{margin-top:34px}
+.demo-vids h3{font-size:clamp(24px,4vw,34px);text-align:center;margin-bottom:6px}
+.demo-vids .sub2{text-align:center;color:var(--muted);margin:0 0 18px;font-size:15.5px}
+.car{position:relative}
+.car-track{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
+.car-track::-webkit-scrollbar{display:none}
+.slide{flex:0 0 min(330px,78%);scroll-snap-align:center;margin:0 auto}
+.slide .frame{border-radius:22px;overflow:hidden;border:1px solid var(--line);background:#090d18;aspect-ratio:9/16;max-width:100%}
+.slide video{display:block;width:100%;height:100%;object-fit:cover;background:#090d18}
+.slide figcaption{margin-top:10px;text-align:center;font-weight:700;font-size:15px}
+.slide figcaption span{display:block;font-weight:500;color:var(--muted);font-size:13.5px}
+.car-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
+.car-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:20px;cursor:pointer}
+.car-btn:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:8px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--pink);width:24px;border-radius:99px}
+.demo-cta{text-align:center;margin-top:22px}
+.demo-cta .btn{width:auto;padding:15px 32px}
+@media(min-width:900px){.slide{flex-basis:330px}.car-track{justify-content:center;overflow-x:visible}.car-btn,.dots{display:none}.car-nav{display:none}}
+
+/* plantillas */
+.gate{position:relative}
+.gate.locked .tpl-body{filter:blur(7px);pointer-events:none;user-select:none;max-height:360px;overflow:hidden}
+.gate .lock{display:none}
+.gate.locked .lock{display:grid;place-items:center;position:absolute;inset:0;z-index:2;text-align:center;padding:18px}
+.lock>div{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;max-width:420px;box-shadow:0 18px 50px rgba(0,0,0,.25)}
+.lock h3{font-size:20px;margin-bottom:8px}
+.lock p{margin:0 0 14px;color:var(--muted);font-size:15px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.tabs button{font:inherit;font-weight:700;font-size:15px;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--grad);color:var(--on-grad);border-color:transparent}
+.tpl{display:grid;gap:12px}
+.msg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.msg .mono{margin-bottom:8px;display:block}
+.msg p{margin:0 0 12px;white-space:pre-line}
+.var{color:var(--teal);font-weight:700}
+
+/* faq */
+details{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:0 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:700;padding:16px 0;list-style:none;display:flex;justify-content:space-between;gap:14px}
+summary::after{content:"+";color:var(--pink);font-size:22px;line-height:1}
+details[open] summary::after{content:"–"}
+details p{margin:0 0 16px;color:var(--muted)}
+
+/* cierre */
+.final{margin-top:48px;border-radius:26px;padding:clamp(28px,5vw,52px);text-align:center;background:var(--surface);border:1px solid var(--line);background-image:radial-gradient(700px 300px at 50% -40%,var(--glow),transparent 70%)}
+.final h2{font-size:clamp(28px,5vw,44px);margin-bottom:12px}
+.final p{color:var(--muted);max-width:34em;margin:0 auto 22px}
+.final .btn{width:auto;padding:16px 34px;font-size:18px}
+footer{margin-top:28px;color:var(--muted);font-size:13px;text-align:center}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="ll">LL</span>LiveLeads</div>
+    <span class="mono">Recurso gratuito · Guía del vendedor en vivo</span>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <span class="mono">Para vendedores de TikTok Live</span>
+        <h1>Kit <span class="g">Live sin improvisar</span></h1>
+        <p class="lead">Un checklist para antes, durante y después de tu live, más mensajes de seguimiento para escribirles a los que preguntaron y no compraron. Hecho para vendedores que ya transmiten y quieren dejar de depender de la memoria.</p>
+        <ul class="chips">
+          <li>Checklist en 3 momentos</li>
+          <li>12 mensajes por rubro</li>
+          <li>Ropa · Joyería · Tecnología · Infoproductos</li>
+        </ul>
+      </div>
+      <div class="card form" id="captura">
+        <h2>Recibe el kit completo</h2>
+        <p>Desbloquea los mensajes de seguimiento y te avisamos cuando haya una nueva guía.</p>
+        <form id="f" novalidate>
+          <div class="f"><label for="email">Correo</label><input id="email" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" required></div>
+          <div class="f"><label for="tk">Tu usuario de TikTok</label><input id="tk" type="text" placeholder="@tutienda" autocomplete="off"></div>
+          <div class="f"><label for="rubro">¿Qué vendes?</label>
+            <select id="rubro"><option>Ropa</option><option>Joyería y accesorios</option><option>Tecnología</option><option>Infoproductos</option><option>Otro</option></select></div>
+          <button class="btn" type="submit">Desbloquear el kit</button>
+          <div class="ok-msg" id="okmsg" role="status">Listo: los mensajes ya están desbloqueados más abajo.</div>
+          <p class="fine">Usamos tus datos solo para enviarte el kit y novedades de Live Leads. Puedes pedir que los borremos escribiendo a tiktoklive.leads@gmail.com.</p>
+        </form>
+      </div>
+    </div>
+
+    <nav class="toc" aria-label="Contenido">
+      <h2 class="mono">Cubriremos</h2>
+      <ol>
+        <li><a href="#antes">¿Qué dejo listo antes de entrar en vivo?</a></li>
+        <li><a href="#gancho">¿Cómo engancho desde el primer minuto?</a></li>
+        <li><a href="#oferta">¿Cómo armo una oferta que se entienda?</a></li>
+        <li><a href="#durante">¿Cómo no perder ventas durante el live?</a></li>
+        <li><a href="#despues">¿Qué hago cuando el live termina?</a></li>
+        <li><a href="#plantillas">¿Qué le escribo a cada lead?</a></li>
+      </ol>
+    </nav>
+
+    <section class="q" id="antes">
+      <span class="mono">Antes del live</span>
+      <h2>¿Qué dejo listo antes de entrar en vivo?</h2>
+      <p>Si no puedes responder qué material es, cómo se usa o cuánto cuesta sin dudar, todavía no estás listo para transmitir. Marca cada punto; tu avance se guarda en este navegador.</p>
+      <div class="card moment">
+        <h3>Preparación <span class="cnt" data-cnt="a">0/6</span></h3>
+        <div class="bar"><i data-bar="a"></i></div>
+        <ul class="chk" data-group="a">
+          <li><label><input type="checkbox"><span>Usé o probé el producto yo mismo y sé cómo funciona.</span></label></li>
+          <li><label><input type="checkbox"><span>Tengo a mano material, medidas, tallas o contenido de cada producto.</span></label></li>
+          <li><label><input type="checkbox"><span>Escribí las 3 preguntas que más me hacen y su respuesta.</span></label></li>
+          <li><label><input type="checkbox"><span>Definí mis ofertas del día: pack, precio solo por live o cantidad limitada real.</span></label></li>
+          <li><label><input type="checkbox"><span>Probé luz, audio y conexión antes de iniciar.</span></label></li>
+          <li><label><input type="checkbox"><span>Revisé las normas vigentes de TikTok LIVE y los ajustes de contenido de mi cuenta.</span></label></li>
+        </ul>
+      </div>
+      <p class="tip"><b>Consejo:</b> si alguien te ayuda a responder preguntas mientras tú transmites, el live fluye mejor. Si estás solo, deja las respuestas escritas donde las veas.</p>
+    </section>
+
+    <section class="q" id="gancho">
+      <span class="mono">Durante el live</span>
+      <h2>¿Cómo engancho desde el primer minuto?</h2>
+      <p>No esperes a tener mucha gente conectada para empezar. Empieza mostrando el producto: así quien entra ve algo desde el primer segundo.</p>
+      <div class="two">
+        <div class="no"><span class="mono">Evita</span><p>“Hola chicos, ¿cómo están? Compartan, denle a la pantalla…” mientras esperas que se llene el live.</p></div>
+        <div class="si"><span class="mono">Haz esto</span><p>Muestra el producto de inmediato: qué es, de qué material, cómo se usa y cómo funciona.</p></div>
+      </div>
+      <p class="tip"><b>Después del gancho,</b> presenta la oferta. Primero interés, luego precio.</p>
+    </section>
+
+    <section class="q" id="oferta">
+      <span class="mono">Durante el live</span>
+      <h2>¿Cómo armo una oferta que se entienda?</h2>
+      <p>Tres formas que puedes combinar. Que quede claro por qué conviene comprar durante el live.</p>
+      <div class="card moment">
+        <h3>Ofertas posibles <span class="cnt" data-cnt="b">0/3</span></h3>
+        <div class="bar"><i data-bar="b"></i></div>
+        <ul class="chk" data-group="b">
+          <li><label><input type="checkbox"><span><b>Pack:</b> suma algo que complementa, por ejemplo unas plantillas o medias a un par de zapatillas.</span></label></li>
+          <li><label><input type="checkbox"><span><b>Precio solo por live:</b> un precio distinto al de tu catálogo, que dices en voz alta y repites.</span></label></li>
+          <li><label><input type="checkbox"><span><b>Cantidad limitada real:</b> avisa cuántas unidades quedan solo si es verdad.</span></label></li>
+        </ul>
+      </div>
+      <p class="tip"><b>Ojo:</b> no inventes escasez. Si dices “últimas unidades” y no es cierto, pierdes la confianza de quien te compró y de quien te vio.</p>
+    </section>
+
+    <section class="q" id="durante">
+      <span class="mono">Durante el live</span>
+      <h2>¿Cómo no perder ventas durante el live?</h2>
+      <p>El chat avanza más rápido de lo que puedes leer. Quien preguntó el precio o dijo “lo quiero” queda enterrado entre cientos de mensajes. Mientras vendes, marca a quien preguntó para escribirle después.</p>
+      <div class="card moment">
+        <h3>Mientras transmites <span class="cnt" data-cnt="c">0/5</span></h3>
+        <div class="bar"><i data-bar="c"></i></div>
+        <ul class="chk" data-group="c">
+          <li><label><input type="checkbox"><span>Repito cada pocos minutos el precio y cómo comprar.</span></label></li>
+          <li><label><input type="checkbox"><span>Nombro a quien pregunta para que se sienta atendido.</span></label></li>
+          <li><label><input type="checkbox"><span>Respondo lo que puedo en vivo y anoto quién quedó pendiente.</span></label></li>
+          <li><label><input type="checkbox"><span>Muestro un producto a la vez, sin saltar entre varios.</span></label></li>
+          <li><label><input type="checkbox"><span>No cierro el live sin repetir la oferta una última vez.</span></label></li>
+        </ul>
+      </div>
+      <h3 class="warn-title">PARA QUE NO TE PASE ESTO... <span class="g">USA LIVE LEADS</span></h3>
+      <div class="ll-intro">
+        <div class="head"><span class="ll">LL</span><span class="mono">Con Live Leads</span></div>
+        <h3>Alguien que lee el chat <span class="g">mientras tú vendes</span></h3>
+        <p class="sub">Live Leads lee el chat de tu live y clasifica a cada espectador por intención: Compra, Negociando o Interesado. Tú sigues mostrando producto. Cuando puedas, ves a quién escribirle y abres su perfil de TikTok con un clic.</p>
+        <ol class="steps">
+          <li><b>Conectas tu perfil</b><span>Ingresas el enlace de tu perfil de TikTok en el demo.</span></li>
+          <li><b>El chat se ordena</b><span>Cada espectador queda en una etiqueta según lo que escribió. Puedes agregar tus propias palabras clave.</span></li>
+          <li><b>Tú escribes el DM</b><span>Abres su perfil y le escribes tú, con el historial del live guardado.</span></li>
+        </ol>
+        <div class="board" role="img" aria-label="Ejemplo ilustrativo de leads ordenados por intención">
+          <div class="board-h"><span class="live-dot">En vivo</span><span class="mono">3 leads detectados</span></div>
+          <div class="lead"><b>@cliente1.ejemplo</b><em>“lo quiero, ¿cómo pago?”</em><span class="tag t-c">Compra</span></div>
+          <div class="lead"><b>@cliente2.ejemplo</b><em>“¿me haces precio por dos?”</em><span class="tag t-n">Negociando</span></div>
+          <div class="lead"><b>@cliente3.ejemplo</b><em>“¿tienes en talla M?”</em><span class="tag t-i">Interesado</span></div>
+          <span class="dm">Abrir perfil de TikTok →</span>
+          <p class="ex">Datos y mensajes de ejemplo, no son personas reales. La clasificación se basa en palabras clave y puede equivocarse con mensajes ambiguos o jerga local.</p>
+        </div>
+        <div class="limits">
+          <div><b>Qué hace:</b> ordena el chat por intención, guarda el historial de cada live y abre el perfil del lead.</div>
+          <div><b>Qué no hace:</b> no envía mensajes por ti, no te pide la contraseña de TikTok y no es una herramienta oficial de TikTok.</div>
+        </div>
+      </div>
+
+      <div class="demo-vids" id="videos">
+        <h3>Ve cómo funciona <span class="g">LiveLeads</span></h3>
+        <p class="sub2">Dos recorridos cortos con datos de ejemplo. Activa el sonido para escuchar la explicación.</p>
+        <div class="car" aria-roledescription="carrusel" aria-label="Videos de Live Leads">
+          <div class="car-track" id="carTrack">
+            <figure class="slide" style="margin-block:0">
+              <div class="frame"><video src="vid/live-controller.mp4" controls playsinline preload="metadata" aria-label="Video: Live Controller de Live Leads"></video></div>
+              <figcaption>Live Controller<span>Ordena el chat por intención mientras vendes · 20 s</span></figcaption>
+            </figure>
+            <figure class="slide" style="margin-block:0">
+              <div class="frame"><video src="vid/bandeja-rescate.mp4" controls playsinline preload="metadata" aria-label="Video: Bandeja de rescate de Live Leads"></video></div>
+              <figcaption>Bandeja de rescate<span>Retoma tus leads después del live · 29 s</span></figcaption>
+            </figure>
+          </div>
+          <div class="car-nav">
+            <button type="button" class="car-btn" id="carPrev" aria-label="Video anterior">‹</button>
+            <div class="dots" aria-hidden="true"><i class="on"></i><i></i></div>
+            <button type="button" class="car-btn" id="carNext" aria-label="Video siguiente">›</button>
+          </div>
+        </div>
+        <div class="demo-cta"><a class="btn" href="https://www.tiktoklive.me/app" target="_blank" rel="noopener">Prueba el demo</a></div>
+      </div>
+    </section>
+
+    <section class="q" id="despues">
+      <span class="mono">Después del live</span>
+      <h2>¿Qué hago cuando el live termina?</h2>
+      <p>La conversación no termina con el live. Escribe el mismo día, mientras el producto sigue fresco en la cabeza del cliente. Tú envías cada mensaje, uno por uno: no automatices los DMs ni escribas a quien no te preguntó nada.</p>
+      <div class="card moment">
+        <h3>Seguimiento <span class="cnt" data-cnt="d">0/5</span></h3>
+        <div class="bar"><i data-bar="d"></i></div>
+        <ul class="chk" data-group="d">
+          <li><label><input type="checkbox"><span>Reviso la lista de quienes preguntaron o dijeron que querían comprar.</span></label></li>
+          <li><label><input type="checkbox"><span>Empiezo por quienes dijeron “lo quiero” o pidieron talla o precio.</span></label></li>
+          <li><label><input type="checkbox"><span>Escribo cada mensaje a mano, con su nombre y lo que preguntó.</span></label></li>
+          <li><label><input type="checkbox"><span>Si no responde, hago un segundo intento al día siguiente y paro ahí.</span></label></li>
+          <li><label><input type="checkbox"><span>Anoto qué pregunta se repitió para prepararla en el próximo live.</span></label></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="q" id="plantillas">
+      <span class="mono">Mensajes de seguimiento</span>
+      <h2>¿Qué le escribo a cada lead?</h2>
+      <p>Cuatro rubros, tres momentos cada uno. Cambia lo que está en <span class="var">color</span> y envíalo desde tu cuenta, como lo harías normalmente.</p>
+      <div class="gate locked" id="gate">
+        <div class="lock"><div>
+          <h3>Desbloquea los 12 mensajes</h3>
+          <p>Déjanos tu correo y los ves aquí mismo.</p>
+          <a class="btn sm" href="#captura">Ir al formulario</a>
+        </div></div>
+        <div class="tpl-body">
+          <div class="tabs" role="tablist" aria-label="Rubro">
+            <button role="tab" aria-selected="true" data-t="ropa" id="tab-ropa">Ropa</button>
+            <button role="tab" aria-selected="false" data-t="joyeria" id="tab-joyeria">Joyería</button>
+            <button role="tab" aria-selected="false" data-t="tec" id="tab-tec">Tecnología</button>
+            <button role="tab" aria-selected="false" data-t="info" id="tab-info">Infoproductos</button>
+          </div>
+          <div class="tpl" id="tpl" role="tabpanel"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="q" id="faq">
+      <h2 style="margin-bottom:18px">Preguntas frecuentes</h2>
+      <details><summary>¿Live Leads envía los mensajes por mí?</summary><p>No. Live Leads te muestra a quién escribirle y abre su perfil de TikTok. El mensaje lo escribes y lo envías tú.</p></details>
+      <details><summary>¿Necesito Live Leads para usar este kit?</summary><p>No. El checklist y los mensajes funcionan solos. Live Leads es una ayuda para encontrar rápido a los que preguntaron.</p></details>
+      <details><summary>¿Live Leads es una herramienta oficial de TikTok?</summary><p>No. Es una herramienta independiente para vendedores de TikTok Live.</p></details>
+      <details><summary>¿Tiene costo?</summary><p>El kit es gratis. Del producto estamos en piloto con acceso por tandas; los precios se definen con los primeros vendedores.</p></details>
+    </section>
+
+    <div class="final">
+      <span class="mono">Siguiente paso</span>
+      <h2 style="margin-top:10px">Prueba cómo se <span class="g">ordenan tus leads</span></h2>
+      <p>Conecta tu perfil en el demo y mira el chat de tu live clasificado en Compra, Negociando e Interesado.</p>
+      <a class="btn" href="https://www.tiktoklive.me/app" target="_blank" rel="noopener">Prueba el demo</a>
+    </div>
+  </main>
+  <footer>Live Leads · tiktoklive.leads@gmail.com · WhatsApp +51 934 000 821</footer>
+</div>
+
+<script>
+(function(){
+  var KEY='ll-kit-v1';
+  function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
+  function save(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+  var st=load();
+
+  // checklists con progreso
+  document.querySelectorAll('.chk').forEach(function(ul){
+    var g=ul.dataset.group, boxes=ul.querySelectorAll('input');
+    var saved=(st.c&&st.c[g])||[];
+    function upd(){
+      var n=0;boxes.forEach(function(b){if(b.checked)n++});
+      var c=document.querySelector('[data-cnt="'+g+'"]'),bar=document.querySelector('[data-bar="'+g+'"]');
+      if(c)c.textContent=n+'/'+boxes.length; if(bar)bar.style.width=(100*n/boxes.length)+'%';
+    }
+    boxes.forEach(function(b,i){
+      b.checked=!!saved[i];
+      b.addEventListener('change',function(){
+        var s=load();s.c=s.c||{};s.c[g]=[].map.call(boxes,function(x){return x.checked});save(s);upd();
+      });
+    });
+    upd();
+  });
+
+  // carrusel de videos
+  (function(){
+    var tr=document.getElementById('carTrack'); if(!tr)return;
+    var sl=tr.querySelectorAll('.slide'),dots=document.querySelectorAll('.dots i'),pv=document.getElementById('carPrev'),nx=document.getElementById('carNext');
+    function idx(){var w=sl[0].offsetWidth+18;return Math.max(0,Math.min(sl.length-1,Math.round(tr.scrollLeft/w)))}
+    function upd(){var i=idx();dots.forEach(function(d,k){d.className=k===i?'on':''});pv.disabled=i===0;nx.disabled=i===sl.length-1}
+    function go(i){sl[Math.max(0,Math.min(sl.length-1,i))].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
+    pv.addEventListener('click',function(){go(idx()-1)});
+    nx.addEventListener('click',function(){go(idx()+1)});
+    tr.addEventListener('scroll',function(){upd()},{passive:true});
+    tr.querySelectorAll('video').forEach(function(v){v.addEventListener('play',function(){tr.querySelectorAll('video').forEach(function(o){if(o!==v)o.pause()})})});
+    upd();
+  })();
+
+  // plantillas
+  var T={
+    ropa:[['Mismo día','Hola {nombre}, soy {tienda}. En el live de hoy preguntaste por {prenda} en talla {talla}. Todavía la tengo. ¿Te la separo?'],
+          ['Al día siguiente','Hola {nombre}, te escribo por la {prenda} que viste ayer. Te dejo una foto de cerca y cómo calza. ¿Quieres que te la reserve?'],
+          ['Cierre amable','Hola {nombre}, no quiero molestarte. Si ya no te interesa la {prenda}, no hay problema. Cuando haga otro live te aviso por si te sirve algo más.']],
+    joyeria:[['Mismo día','Hola {nombre}, soy {tienda}. Hoy preguntaste por {pieza}. Te cuento de qué material es y cómo se cuida. ¿Quieres que te envíe fotos de cerca?'],
+          ['Al día siguiente','Hola {nombre}, te escribo por {pieza}. Si la quieres para regalo, puedo mostrarte opciones de presentación. ¿Para qué ocasión la buscas?'],
+          ['Cierre amable','Hola {nombre}, gracias por pasar por el live. Si más adelante quieres {pieza} u otra pieza, escríbeme y te muestro lo que tenga disponible.']],
+    tec:[['Mismo día','Hola {nombre}, soy {tienda}. En el live preguntaste cómo funciona {producto}. Te resumo lo básico: {dato}. ¿Quieres que te lo muestre en el próximo live?'],
+          ['Al día siguiente','Hola {nombre}, sobre {producto}: te dejo lo que incluye la caja y la garantía que ofrezco. ¿Te queda alguna duda antes de decidir?'],
+          ['Cierre amable','Hola {nombre}, si todavía estás comparando {producto}, dime qué te falta saber y te lo respondo. Sin presión.']],
+    info:[['Mismo día','Hola {nombre}, soy {tienda}. En el live te interesó {programa}. Te cuento qué incluye y para quién sirve. Si te hace sentido, te explico cómo acceder.'],
+          ['Al día siguiente','Hola {nombre}, te escribo por {programa}. Te comparto el temario y una muestra de lo que aprenderás. ¿Qué te gustaría lograr con esto?'],
+          ['Cierre amable','Hola {nombre}, no quiero insistir. Si {programa} no es para ti ahora, avísame y te aviso de la próxima edición.']]
+  };
+  var panel=document.getElementById('tpl'),tabs=document.querySelectorAll('.tabs button');
+  function esc(s){return s.replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+  function render(k){
+    panel.innerHTML='';
+    T[k].forEach(function(m){
+      var d=document.createElement('div');d.className='msg';
+      var raw=m[1], html=esc(raw).replace(/\{([^}]+)\}/g,'<span class="var">{$1}</span>');
+      d.innerHTML='<span class="mono">'+m[0]+'</span><p>'+html+'</p>';
+      var b=document.createElement('button');b.type='button';b.className='btn sm ghost';b.textContent='Copiar';
+      b.addEventListener('click',function(){
+        function done(){b.textContent='Copiado';setTimeout(function(){b.textContent='Copiar'},1400)}
+        function fb(){var r=document.createRange();r.selectNodeContents(d.querySelector('p'));var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selecciona y copia'}
+        try{navigator.clipboard.writeText(raw).then(done,fb)}catch(e){fb()}
+      });
+      d.appendChild(b);panel.appendChild(d);
+    });
+    tabs.forEach(function(t){t.setAttribute('aria-selected',t.dataset.t===k?'true':'false')});
+  }
+  tabs.forEach(function(t){t.addEventListener('click',function(){render(t.dataset.t)})});
+  render('ropa');
+
+  // captura (maqueta: no envía datos a ningún servidor)
+  var gate=document.getElementById('gate'),ok=document.getElementById('okmsg');
+  if(st.unlocked){gate.classList.remove('locked')}
+  document.getElementById('f').addEventListener('submit',function(e){
+    e.preventDefault();
+    var em=document.getElementById('email');
+    if(!/^\S+@\S+\.\S+$/.test(em.value)){em.focus();em.setAttribute('aria-invalid','true');return}
+    em.removeAttribute('aria-invalid');
+    gate.classList.remove('locked');ok.classList.add('on');
+    var s=load();s.unlocked=true;save(s);
+    document.getElementById('plantillas').scrollIntoView({behavior:'smooth'});
+  });
+})();
+</script>
+
+</body>
+</html>
